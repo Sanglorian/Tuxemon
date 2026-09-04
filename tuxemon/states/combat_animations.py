@@ -27,6 +27,7 @@ from tuxemon.menu.menu import Menu
 from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
+from tuxemon.state.animation_transition import AnimationTransition
 from tuxemon.ui.combat_bars import CombatBars
 from tuxemon.ui.combat_hud import CombatLayoutManager
 from tuxemon.ui.combat_layout import LayoutManager
@@ -49,12 +50,48 @@ logger = logging.getLogger(__name__)
 
 HUD_LAYER = 100
 
-# EXP bar pacing. The bar sweeps at a steady rate rather than covering any
-# distance in a fixed time, so a big gain takes proportionally longer and the
-# eye can follow it either way.
-EXP_BAR_SWEEP_TIME = 2.0  # seconds for a full empty -> full sweep
-EXP_BAR_MIN_SWEEP_TIME = 0.5  # floor, so a tiny gain is still readable
-EXP_BAR_FULL_HOLD = 0.5  # pause at the top before wrapping round
+# EXP bar pacing.
+#
+# The bar uses the game-wide easing (see config.py), a quintic ease-out that
+# opens at five times its average speed and decelerates to a stop. Sweep time
+# is proportional to the distance travelled, which keeps that opening flick at
+# a constant 5 / EXP_BAR_SWEEP_TIME bar-widths per second however much
+# experience was gained; lower the flick by raising the sweep time.
+EXP_BAR_TRANSITION = "out_quint"
+EXP_BAR_SWEEP_TIME = 4.0  # seconds for a full empty -> full sweep
+EXP_BAR_MIN_SWEEP_TIME = 0.6  # floor, so a tiny gain is still readable
+# A gain worth more than a level or so would run for ten seconds at that pace,
+# which is a long time to hold up the battle, so the whole animation is capped
+# and its sweeps scaled down to fit. Only a big multi-level gain hits this.
+EXP_BAR_MAX_TOTAL_TIME = 4.0
+# The ease-out already coasts at the top for a while, so this is only a garnish
+# on top of it rather than the whole pause before the bar wraps round.
+EXP_BAR_FULL_HOLD = 0.2
+
+
+def _settle_fraction(transition: str, covered: float = 0.99) -> float:
+    """
+    How far into an eased animation the travel is, for practical purposes,
+    over.
+
+    An ease-out creeps towards its target long after it looks stopped -- a
+    quintic spends its last 40% moving the final 1%. Anything scheduled to
+    follow the animation should line up with this point, not its nominal end,
+    or it waits through motion nobody can see.
+    """
+    ease = getattr(AnimationTransition, transition)
+    steps = 1000
+    return next(
+        (
+            step / steps
+            for step in range(steps + 1)
+            if ease(step / steps) >= covered
+        ),
+        1.0,
+    )
+
+
+EXP_BAR_SETTLE = _settle_fraction(EXP_BAR_TRANSITION)
 
 
 def toggle_visible(sprite: Sprite) -> None:
@@ -334,14 +371,22 @@ class CombatAnimations(Menu[None], ABC):
 
         Each level gained gets a sweep of its own: the bar fills to the top,
         pauses, wraps back to empty and carries on, so a multi-level gain
-        reads as several level-ups rather than one jump.
+        reads as several level-ups rather than one jump. A gain large enough
+        to outrun ``EXP_BAR_MAX_TOTAL_TIME`` keeps all its sweeps, scaled to
+        fit rather than dropped.
 
         Returns:
             One ``(value, duration, from_empty, delay)`` tuple per sweep.
         """
 
         def pace(distance: float) -> float:
-            """Time to travel `distance`, at a fixed rate with a floor."""
+            """
+            Time to travel `distance`, in proportion to it and with a floor.
+
+            Scaling the time with the distance is what keeps the ease-out's
+            opening flick at one speed: a bigger gain takes longer rather
+            than moving faster.
+            """
             return max(
                 EXP_BAR_MIN_SWEEP_TIME, abs(distance) * EXP_BAR_SWEEP_TIME
             )
@@ -371,7 +416,18 @@ class CombatAnimations(Menu[None], ABC):
                 EXP_BAR_FULL_HOLD if wrapped else 0.0,
             )
         )
-        return sweeps
+
+        total = sum(duration + delay for _, duration, _, delay in sweeps)
+        if total <= EXP_BAR_MAX_TOTAL_TIME:
+            return sweeps
+
+        # Too long to sit through: play the same sweeps, proportionally
+        # quicker, so the shape of the gain still reads.
+        scale = EXP_BAR_MAX_TOTAL_TIME / total
+        return [
+            (value, duration * scale, from_empty, delay * scale)
+            for value, duration, from_empty, delay in sweeps
+        ]
 
     def _pending_exp_sweeps(
         self, monster: Monster
@@ -390,10 +446,20 @@ class CombatAnimations(Menu[None], ABC):
         )
 
     def exp_animation_time(self, monster: Monster) -> float:
-        """How long ``animate_exp`` will take for a pending gain."""
-        return sum(
-            duration + delay
-            for _, duration, _, delay in self._pending_exp_sweeps(monster)
+        """
+        When the EXP bar comes to rest, in seconds from the start of the
+        animation.
+
+        This is where the motion ends rather than where the animation does:
+        the final sweep's ease-out is still creeping imperceptibly after it,
+        and waiting that out would be dead time (see _settle_fraction).
+        """
+        *earlier, last = self._pending_exp_sweeps(monster)
+        _, last_duration, _, last_delay = last
+        return (
+            sum(duration + delay for _, duration, _, delay in earlier)
+            + last_delay
+            + last_duration * EXP_BAR_SETTLE
         )
 
     def exp_first_wrap_time(self, monster: Monster) -> float:
@@ -401,13 +467,13 @@ class CombatAnimations(Menu[None], ABC):
         When the EXP bar will first reach the top, in seconds from the start
         of the animation. That is the moment the new level should be shown.
 
-        Falls back to the whole animation length when no level was gained,
-        since then there is no wrap to line up with.
+        Falls back to the end of the motion when no level was gained, since
+        then there is no wrap to line up with.
         """
         first_value, duration, _, delay = self._pending_exp_sweeps(monster)[0]
         if first_value < 1.0:
             return self.exp_animation_time(monster)
-        return delay + duration
+        return delay + duration * EXP_BAR_SETTLE
 
     def animate_exp(self, monster: Monster) -> None:
         """Animate a monster's EXP bar up to its current progress."""
@@ -427,9 +493,7 @@ class CombatAnimations(Menu[None], ABC):
                     exp_bar,
                     value=value,
                     duration=duration,
-                    # a steady fill is the easiest to follow; eased curves
-                    # put nearly all the travel in the first few frames
-                    transition="linear",
+                    transition=EXP_BAR_TRANSITION,
                     # restarting from 0 is what makes the bar wrap around;
                     # the delay holds it at full first, so the wrap is seen
                     initial=0.0 if from_empty else None,
@@ -540,9 +604,15 @@ class CombatAnimations(Menu[None], ABC):
 
         hud_model = self.env.get_battle_graphics().hud
         if self.combat_session.is_double:
-            hud_graphics = hud_model.double_player if is_player else hud_model.double_opponent
+            hud_graphics = (
+                hud_model.double_player
+                if is_player
+                else hud_model.double_opponent
+            )
         else:
-            hud_graphics = hud_model.hud_player if is_player else hud_model.hud_opponent
+            hud_graphics = (
+                hud_model.hud_player if is_player else hud_model.hud_opponent
+            )
 
         hud = self.check_hud(monster, hud_graphics)
         hud.base_image = hud.image.copy()

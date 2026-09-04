@@ -223,12 +223,55 @@ def test_a_plain_gain_is_a_single_sweep():
         pytest.param(0.9, id="most_of_the_bar"),
     ],
 )
-def test_the_bar_travels_at_a_steady_rate(distance):
-    """Twice the distance should take twice as long, not the same time."""
+def test_sweep_time_is_proportional_to_the_distance(distance):
+    """
+    Twice the distance takes twice as long, rather than moving twice as fast.
+
+    This is what holds the ease-out's opening speed steady however much
+    experience was gained (see test_the_opening_flick_is_the_same_speed).
+    """
     from tuxemon.states.combat_animations import EXP_BAR_SWEEP_TIME
 
     ((_, duration, _, _),) = _sweeps(0.0, distance, 0)
     assert duration == pytest.approx(distance * EXP_BAR_SWEEP_TIME)
+
+
+@pytest.mark.parametrize(
+    "distance",
+    [
+        pytest.param(0.25, id="quarter_bar"),
+        pytest.param(0.5, id="half_bar"),
+        pytest.param(0.9, id="most_of_the_bar"),
+    ],
+)
+def test_the_opening_flick_is_the_same_speed(distance):
+    """The fastest moment of a sweep, in bar-widths per second."""
+    from tuxemon.state.animation_transition import AnimationTransition
+    from tuxemon.states.combat_animations import (
+        EXP_BAR_SWEEP_TIME,
+        EXP_BAR_TRANSITION,
+    )
+
+    ease = getattr(AnimationTransition, EXP_BAR_TRANSITION)
+    ((_, duration, _, _),) = _sweeps(0.0, distance, 0)
+
+    step = 0.001
+    peak = max(
+        (ease(p + step) - ease(p)) * distance / (step * duration)
+        for p in [i * step for i in range(int(1 / step))]
+    )
+    # out_quint opens at five times its average speed
+    assert peak == pytest.approx(5 / EXP_BAR_SWEEP_TIME, rel=0.02)
+
+
+def test_the_settle_point_lands_before_the_animation_ends():
+    """
+    An ease-out creeps long after it looks stopped; anything scheduled to
+    follow the bar keys off the settle point instead of the nominal end.
+    """
+    from tuxemon.states.combat_animations import EXP_BAR_SETTLE
+
+    assert 0.5 < EXP_BAR_SETTLE < 0.7
 
 
 def test_a_tiny_gain_still_gets_a_visible_sweep():
@@ -255,3 +298,14 @@ def test_each_level_gained_gets_its_own_sweep():
     sweeps = _sweeps(0.8, 0.3, 3)
     assert [value for value, _, _, _ in sweeps] == [1.0, 1.0, 1.0, 0.3]
     assert all(delay > 0 for _, _, _, delay in sweeps[1:])
+
+
+def test_a_huge_gain_is_capped_but_keeps_every_sweep():
+    """Five levels at full pace would run far too long to sit through."""
+    from tuxemon.states.combat_animations import EXP_BAR_MAX_TOTAL_TIME
+
+    sweeps = _sweeps(0.1, 0.4, 5)
+    total = sum(duration + delay for _, duration, _, delay in sweeps)
+
+    assert len(sweeps) == 6  # one per level, plus the settling sweep
+    assert total == pytest.approx(EXP_BAR_MAX_TOTAL_TIME)

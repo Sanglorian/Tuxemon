@@ -951,9 +951,6 @@ class CombatState(CombatAnimations):
         Update the HUD and handle visual level up cues (XP bar).
         """
         if winner in self.combat_session.monsters_in_play_right:
-                mex = T.format("tuxemon_new_tech", params)
-                self.text_anim.add_xp_message(mex)
-
             owner = winner.get_owner()
             if owner.is_player:
                 # XP bar animation

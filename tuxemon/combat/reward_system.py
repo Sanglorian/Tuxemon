@@ -28,7 +28,8 @@ class RewardDataEntry:
     levels_gained: int = 0
     bond_milestones_crossed: set[int] = field(default_factory=set)
     total_experience: int = 0
-    new_moves: list[str] = field(default_factory=list)
+    moves: list[str] = field(default_factory=list)
+    """Techniques this specific monster learned by levelling up."""
 
 
 @dataclass
@@ -142,15 +143,15 @@ class RewardCalculator:
             levels_gained=levels,
             bond_milestones_crossed=crossed,
             total_experience=winner.total_experience,
-            new_moves=new_moves,
+            moves=new_moves,
         )
 
     def update_moves_and_messages(
         self, winner: Monster, entry: RewardDataEntry, rewards_data: RewardData
     ) -> None:
         """Update moves and add messages for a winner."""
-        if entry.new_moves:
-            rewards_data.moves.extend(entry.new_moves)
+        if entry.moves:
+            rewards_data.moves.extend(entry.moves)
 
         rewards_data.messages.append(
             T.format(

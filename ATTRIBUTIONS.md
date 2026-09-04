@@ -1053,6 +1053,8 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 * ["Horseshoe"](https://wiki.tuxemon.org/File:Horseshoe.png) Adapted by Sanglorian from the Superpowers Asset Packs.
 
+* ["Element Pellet"](https://wiki.tuxemon.org/File:Horseshoe.png) Adapted by Sanglorian from OceansDream. [http://opengameart.org/content/various-inventory-24-pixel-icon-set CC BY 3.0 on OGA]
+
 * ["Marble"](https://wiki.tuxemon.org/File:Pixel_icons_by_oceansdream23.png) [http://opengameart.org/content/various-inventory-24-pixel-icon-set CC BY 3.0 on OGA, from OceansDream]
 
 * ["Open Hand"](https://wiki.tuxemon.org/File:Pixel_icons_by_oceansdream32.png) [http://opengameart.org/content/various-inventory-24-pixel-icon-set CC BY 3.0 on OGA, from OceansDream]

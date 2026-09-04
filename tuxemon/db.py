@@ -792,6 +792,13 @@ class ItemModel(DataModel, BaseLookupModel):
             "0.5 for a resistance."
         ),
     )
+    element_modifiers: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "Power multipliers keyed by element slug, applied to the holder's "
+            "techniques of that element."
+        ),
+    )
     granted_techniques: Sequence[str] = Field(
         default_factory=list,
         description="Technique slugs granted to the holder while this item is equipped.",
@@ -866,6 +873,19 @@ class ItemModel(DataModel, BaseLookupModel):
                 raise ValueError(
                     f"The resistance against {element} must be positive, "
                     f"got {multiplier}"
+                )
+        return v
+
+    @field_validator("element_modifiers")
+    def element_modifiers_exist(cls, v: dict[str, float]) -> dict[str, float]:
+        for element, multiplier in v.items():
+            if not has.db_entry("element", element):
+                raise ValueError(
+                    f"Element {element} does not exist in the database"
+                )
+            if multiplier <= 0:
+                raise ValueError(
+                    f"Element modifier for {element} must be positive"
                 )
         return v
 

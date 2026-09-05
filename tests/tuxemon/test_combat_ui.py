@@ -324,3 +324,43 @@ def test_a_huge_gain_is_capped_but_keeps_every_sweep():
 
     assert len(sweeps) == 6  # one per level, plus the settling sweep
     assert total == pytest.approx(EXP_BAR_MAX_TOTAL_TIME)
+
+
+class _FlushHarness:
+    """Just enough CombatState to exercise the end-of-combat flush."""
+
+    from tuxemon.states.combat_state import CombatState
+
+    _flush_pending_experience_display = (
+        CombatState._flush_pending_experience_display
+    )
+
+    def __init__(self, bars):
+        self.bars = bars
+        self._pending_exp_display = []
+        self._pending_levelup_summaries = []
+        self.pending_level_ups = {}
+
+
+def test_combat_ending_early_leaves_the_bar_telling_the_truth(combat_ui):
+    """
+    The phase machine will not end combat with a message queued, so this
+    should never happen -- but if it did, a claimed bar would otherwise sit
+    on the old value for an animation that is never going to run.
+    """
+    monster = MagicMock()
+    monster.experience_progress_percent = 0.2
+    bar = combat_ui.get_exp_bar(monster)
+
+    monster.experience_progress_percent = 0.75
+    combat_ui.claim(bar, monster.experience_progress_percent)
+    assert bar.value == 0.2  # holding still, waiting for its animation
+
+    harness = _FlushHarness(combat_ui)
+    harness._pending_exp_display.append(monster)
+    harness.pending_level_ups[monster] = 1
+    harness._flush_pending_experience_display()
+
+    assert bar.value == 0.75
+    assert harness._pending_exp_display == []
+    assert harness.pending_level_ups == {}

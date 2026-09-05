@@ -223,3 +223,25 @@ def test_has_pending_xp_tracks_the_batch(manager):
     assert manager.has_pending_xp
     manager.trigger_xp_animation(MagicMock(), MagicMock())
     assert not manager.has_pending_xp
+
+
+def test_still_animating_until_the_whole_queue_has_been_said(manager):
+    """
+    The combat phase machine will not advance while this is true, which is
+    what guarantees a queued experience message is spoken before the battle
+    can end (see CombatState.update_combat_phase).
+    """
+    manager.add_text_animation(MagicMock(), 1.0)
+    manager.add_xp_message("XP +10")
+    manager.trigger_xp_animation(MagicMock(), MagicMock())
+
+    assert manager.is_animating()
+
+    manager.update_text_animation(0.1)  # first message starts
+    assert manager.is_animating()
+
+    manager.update_text_animation(1.1)  # XP message starts
+    assert manager.is_animating()
+
+    manager.update_text_animation(99.0)  # it finishes, queue is empty
+    assert not manager.is_animating()

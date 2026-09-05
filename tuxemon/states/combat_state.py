@@ -97,11 +97,6 @@ logger = logging.getLogger(__name__)
 # the other rather than on top of each other.
 MONSTER_ENTRY_STAGGER = 0.7
 
-# The EXP bars move when the "gained N experience" message reaches the screen,
-# which is whenever the queue of battle messages ahead of it drains. Should
-# that never happen -- a battle that ends first, a message dropped -- the gain
-# is shown anyway rather than not at all. How often to check for that.
-EXP_DISPLAY_FALLBACK = 4.0
 # Breathing room between the bar coming to rest and a level-up summary
 # covering the HUD.
 SUMMARY_AFTER_BAR = 0.4
@@ -946,38 +941,33 @@ class CombatState(CombatAnimations):
 
         # Nothing above moves a bar or opens a summary; it all waits for the
         # experience message to reach the screen (see show_experience_gained).
+
+    def _flush_pending_experience_display(self) -> None:
+        """
+        Give up on anything still waiting for an experience message.
+
+        The combat phase machine will not advance while a message is queued
+        (see update_combat_phase), so combat cannot end before the message is
+        spoken and this normally finds nothing to do. Should that ever change,
+        the HUD is about to disappear and there is no time left to animate, so
+        the bars are set to the truth rather than left holding an old value
+        for an animation that will never run.
+        """
         if self._pending_exp_display:
-            self.task(
-                self._check_experience_was_shown,
-                interval=EXP_DISPLAY_FALLBACK,
+            logger.warning(
+                "Combat ended before the experience message was shown; "
+                "settling %d bar(s) without animating.",
+                len(self._pending_exp_display),
             )
 
-    def _check_experience_was_shown(self) -> None:
-        """
-        Make sure an experience gain is never silently swallowed.
-
-        Normally the message that triggers the bars arrives and this finds
-        nothing to do. It only steps in when the message can no longer be
-        coming -- there is none queued and none waiting to be queued -- which
-        would otherwise leave the bars frozen on the previous level.
-        """
-        if not self._pending_exp_display:
-            return
-
-        if self.text_anim.is_animating() or self.text_anim.has_pending_xp:
-            # still on its way; ask again rather than pre-empting it
-            self.task(
-                self._check_experience_was_shown,
-                interval=EXP_DISPLAY_FALLBACK,
+        for monster in self._pending_exp_display:
+            self.bars.get_exp_bar(monster).sync(
+                monster.experience_progress_percent
             )
-            return
 
-        logger.warning(
-            "Experience message never reached the screen; "
-            "showing the gain for %d monster(s) anyway.",
-            len(self._pending_exp_display),
-        )
-        self.show_experience_gained()
+        self._pending_exp_display.clear()
+        self._pending_levelup_summaries.clear()
+        self.pending_level_ups.clear()
 
     def update_hud_and_level_up(
         self, winner: Monster, techniques: list[str]
@@ -1142,6 +1132,7 @@ class CombatState(CombatAnimations):
 
     def end_combat(self) -> None:
         """End the combat."""
+        self._flush_pending_experience_display()
         self.event_bus.publish("clean_combat")
         for player in self.combat_session.players:
             player.battle_last_used_item_slug = None

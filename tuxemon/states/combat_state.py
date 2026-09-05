@@ -85,6 +85,9 @@ if TYPE_CHECKING:
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
+    # (before, after, delta) per stat, as compare_stats returns
+    StatDiff = dict[str, tuple[int, int, int]]
+
 logger = logging.getLogger(__name__)
 
 # When several monsters enter the battlefield at once (battle start, or a
@@ -94,12 +97,14 @@ logger = logging.getLogger(__name__)
 # the other rather than on top of each other.
 MONSTER_ENTRY_STAGGER = 0.7
 
-# How long after a KO the EXP bar starts moving. The gap leaves room for the
-# faint animation and the "gained N experience" message to be read first.
-EXP_ANIMATION_DELAY = 2.5
-# Earliest a level-up summary may appear; it waits for the bar if the bar
-# takes longer than this (see _levelup_summary_delay).
-LEVELUP_SUMMARY_DELAY = 4.5
+# The EXP bars move when the "gained N experience" message reaches the screen,
+# which is whenever the queue of battle messages ahead of it drains. Should
+# that never happen -- a battle that ends first, a message dropped -- the gain
+# is shown anyway rather than not at all. How often to check for that.
+EXP_DISPLAY_FALLBACK = 4.0
+# Breathing room between the bar coming to rest and a level-up summary
+# covering the HUD.
+SUMMARY_AFTER_BAR = 0.4
 
 
 EVENT_HANDLERS: dict[str, str] = {
@@ -173,6 +178,13 @@ class CombatState(CombatAnimations):
         # Counts monsters entering within the current fill batch so their
         # send-out animations can be staggered (see MONSTER_ENTRY_STAGGER).
         self._entry_index = 0
+        # Visual cues earned but not yet played, waiting on the experience
+        # message to appear (see show_experience_gained).
+        self._pending_exp_display: list[Monster] = []
+        # each entry pairs a monster with its consume_levelup_summary() result
+        self._pending_levelup_summaries: list[
+            tuple[Monster, tuple[int | None, int | None, StatDiff]]
+        ] = []
         # player => home areas on screen
         super().__init__(client=client, teams=context.teams, **kwargs)
         self.combat_session = self.client.combat_session
@@ -376,7 +388,9 @@ class CombatState(CombatAnimations):
             self.combat_session.action_queue.sort()
             self.task(self.check_party_hp, interval=1)
             self.task(self.animate_party_status, interval=3)
-            self.notifier.trigger_xp_and_wait_for_input(self.text_area)
+            self.notifier.trigger_xp_and_wait_for_input(
+                self.text_area, on_shown=self.show_experience_gained
+            )
 
     def create_combat_dialog(self) -> None:
         """Create the area where battle messages are displayed."""
@@ -723,7 +737,6 @@ class CombatState(CombatAnimations):
                 if m:
                     message += "\n" + m
 
-
         self.text_anim.add_text_animation(
             partial(self.dialog.alert, message, self.text_area), action_time
         )
@@ -927,64 +940,115 @@ class CombatState(CombatAnimations):
             for data in rewards.winners:
                 result = data.winner.consume_levelup_summary()
                 if result:
-                    start, end, diff = result
-                    self.task(
-                        partial(
-                            self.client.push_state,
-                            "LevelUpSummaryState",
-                            monster=data.winner,
-                            start_level=start,
-                            end_level=end,
-                            diff=diff,
-                            use_relative_position=True,
-                        ),
-                        # the summary covers the HUD, so let the EXP bar
-                        # finish wrapping round before it appears
-                        interval=self._levelup_summary_delay(data.winner),
+                    self._pending_levelup_summaries.append(
+                        (data.winner, result)
                     )
 
-    def _levelup_summary_delay(self, winner: Monster) -> float:
-        """When to show a monster's level-up summary, in seconds from now."""
-        animation_end = EXP_ANIMATION_DELAY + self.exp_animation_time(winner)
-        return max(LEVELUP_SUMMARY_DELAY, animation_end + 0.4)
+        # Nothing above moves a bar or opens a summary; it all waits for the
+        # experience message to reach the screen (see show_experience_gained).
+        if self._pending_exp_display:
+            self.task(
+                self._check_experience_was_shown,
+                interval=EXP_DISPLAY_FALLBACK,
+            )
+
+    def _check_experience_was_shown(self) -> None:
+        """
+        Make sure an experience gain is never silently swallowed.
+
+        Normally the message that triggers the bars arrives and this finds
+        nothing to do. It only steps in when the message can no longer be
+        coming -- there is none queued and none waiting to be queued -- which
+        would otherwise leave the bars frozen on the previous level.
+        """
+        if not self._pending_exp_display:
+            return
+
+        if self.text_anim.is_animating() or self.text_anim.has_pending_xp:
+            # still on its way; ask again rather than pre-empting it
+            self.task(
+                self._check_experience_was_shown,
+                interval=EXP_DISPLAY_FALLBACK,
+            )
+            return
+
+        logger.warning(
+            "Experience message never reached the screen; "
+            "showing the gain for %d monster(s) anyway.",
+            len(self._pending_exp_display),
+        )
+        self.show_experience_gained()
 
     def update_hud_and_level_up(
         self, winner: Monster, techniques: list[str]
     ) -> None:
         """
-        Update the HUD and handle visual level up cues (XP bar and messages).
+        Note the visual cues a winner has earned, to play once the experience
+        message appears.
         """
         if winner in self.combat_session.monsters_in_play_right:
             if techniques:
-                tech_list = ", ".join(
-                    T.translate(tech) for tech in techniques
-                )
+                tech_list = ", ".join(T.translate(tech) for tech in techniques)
                 params = {"name": winner.name, "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)
 
             owner = winner.get_owner()
-            if owner.is_player:
-                # XP bar animation
+            if owner.is_player and winner not in self._pending_exp_display:
+                self._pending_exp_display.append(winner)
+
+    def show_experience_gained(self) -> None:
+        """
+        Play everything that goes with an experience gain: the bars, the level
+        numbers on the HUD, and any level-up summaries.
+
+        Called when the experience message reaches the screen, so the bars
+        move with the text that explains them rather than at some earlier
+        moment of their own. Safe to call again -- it consumes what it plays,
+        which is what lets a fallback timer cover a message that never
+        arrives (a battle that ends first, say).
+        """
+        winners, self._pending_exp_display = self._pending_exp_display, []
+        summaries, self._pending_levelup_summaries = (
+            self._pending_levelup_summaries,
+            [],
+        )
+
+        # Read the timings first: animate_exp consumes the pending levels that
+        # both of them are derived from.
+        wrap_at = {
+            winner: self.exp_first_wrap_time(winner) for winner in winners
+        }
+        rest_at = {
+            winner: self.exp_animation_time(winner) for winner, _ in summaries
+        }
+
+        for winner in winners:
+            self.animate_exp(winner)
+
+            hud = self.hud_manager.get_hud(winner)
+            if hud:
                 self.task(
-                    partial(self.animate_exp, winner),
-                    interval=EXP_ANIMATION_DELAY,
+                    partial(self._update_hud_details, winner, hud, hud.player),
+                    # on a level-up, let the number tick over exactly as the
+                    # bar tops out rather than at a fixed moment
+                    interval=wrap_at[winner],
                 )
 
-                # General UI refresh
-                self.task(self.refresh_ui, interval=3.0)
-
-                hud = self.hud_manager.get_hud(winner)
-                if hud:
-                    self.task(
-                        partial(
-                            self._update_hud_details, winner, hud, hud.player
-                        ),
-                        # on a level-up, let the number tick over exactly as
-                        # the bar tops out rather than at a fixed moment
-                        interval=EXP_ANIMATION_DELAY
-                        + self.exp_first_wrap_time(winner),
-                    )
+        for winner, (start, end, diff) in summaries:
+            self.task(
+                partial(
+                    self.client.push_state,
+                    "LevelUpSummaryState",
+                    monster=winner,
+                    start_level=start,
+                    end_level=end,
+                    diff=diff,
+                    use_relative_position=True,
+                ),
+                # the summary covers the HUD, so let the bar finish first
+                interval=rest_at[winner] + SUMMARY_AFTER_BAR,
+            )
 
     def animate_party_status(self) -> None:
         """
@@ -1275,7 +1339,9 @@ class CombatState(CombatAnimations):
             self.combat_session.reset()
 
         else:
-            self.notifier.trigger_xp_and_wait_for_input(self.text_area)
+            self.notifier.trigger_xp_and_wait_for_input(
+                self.text_area, on_shown=self.show_experience_gained
+            )
 
     def _on_play_sound_combat(
         self, sound: str | None, value: float | None = None

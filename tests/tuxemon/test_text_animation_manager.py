@@ -189,3 +189,37 @@ def test_is_blocked_false_when_other_state(manager):
     mock_state.name = "SomeOtherState"
     fake = FakeState(text_anim=manager, current_state=mock_state)
     assert fake.is_blocked() is False
+
+
+def test_xp_message_reports_when_it_reaches_the_screen(manager):
+    """The EXP bars hang off this, so they move with the text, not before."""
+    shown = []
+    manager.add_text_animation(MagicMock(), 2.0)  # a message ahead of it
+    manager.add_xp_message("XP +10")
+    manager.trigger_xp_animation(
+        MagicMock(), MagicMock(), on_shown=lambda: shown.append(True)
+    )
+
+    manager.update_text_animation(0.1)  # the earlier message starts
+    assert not shown
+
+    manager.update_text_animation(2.1)  # it finishes, the XP message shows
+    assert shown == [True]
+
+
+def test_xp_message_still_alerts_without_a_callback(manager):
+    manager.add_xp_message("XP +10")
+    alert, text_area = MagicMock(), MagicMock()
+    manager.trigger_xp_animation(alert, text_area)
+
+    anim, _ = manager.text_queue[0]
+    anim()
+    alert.assert_called_once_with("XP +10", text_area)
+
+
+def test_has_pending_xp_tracks_the_batch(manager):
+    assert not manager.has_pending_xp
+    manager.add_xp_message("XP +10")
+    assert manager.has_pending_xp
+    manager.trigger_xp_animation(MagicMock(), MagicMock())
+    assert not manager.has_pending_xp

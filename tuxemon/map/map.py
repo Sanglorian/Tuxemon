@@ -546,8 +546,11 @@ def get_pos_from_tilepos(
             tile position should be drawn, after applying projection and
             the map renderer's center offset.
     """
-    assert current_map.renderer
-    cx, cy = current_map.renderer.get_center_offset()
+    # World maps are drawn (and centred) with the unclamped seamless
+    # renderer, so sprites must use its offset to stay aligned with tiles.
+    renderer = current_map.seamless_renderer or current_map.renderer
+    assert renderer
+    cx, cy = renderer.get_center_offset()
     px, py = project(context, tile_position)
     x = px + cx
     y = py + cy

@@ -22,6 +22,10 @@ class TransitionTeleportAction(EventAction):
     Perform a teleport with a screen transition. Useful for allowing the player
     to go to different maps.
 
+    For transitions between overland maps that are both listed in the world
+    file (spyder.world), the screen fade is skipped so the transition is
+    seamless.
+
     Script usage:
         .. code-block::
 
@@ -58,11 +62,6 @@ class TransitionTeleportAction(EventAction):
             self.stop()
             return
 
-        _time = TRANS_TIME if self.trans_time is None else self.trans_time
-        rgb: ColorLike = BLACK_COLOR
-        if self.rgb:
-            rgb = string_to_colorlike(self.rgb)
-
         request = TeleportRequest(
             char=None,
             mapname=self.map_name,
@@ -73,6 +72,25 @@ class TransitionTeleportAction(EventAction):
             source_x=char.tile_pos[0],
             source_y=char.tile_pos[1],
         )
+
+        world_index = getattr(session.client, "world_index", None)
+        source_map = char.current_map or ""
+        if (
+            world_index is not None
+            and world_index.is_world_map(source_map)
+            and world_index.is_world_map(self.map_name)
+        ):
+            # Both maps are overland world maps — skip the fade entirely.
+            teleport_queue.enqueue(request)
+            session.client.teleporter.handle_next_teleport(char)
+            self.stop()
+            return
+
+        _time = TRANS_TIME if self.trans_time is None else self.trans_time
+        rgb: ColorLike = BLACK_COLOR
+        if self.rgb:
+            rgb = string_to_colorlike(self.rgb)
+
         teleport_queue.enqueue(request)
 
         session.world.prepare_for_teleport()

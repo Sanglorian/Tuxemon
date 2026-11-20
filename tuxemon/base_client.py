@@ -54,6 +54,7 @@ from tuxemon.state.state import State
 from tuxemon.teleporter import Teleporter
 from tuxemon.trade_manager import TradeManager
 from tuxemon.world.weather import WorldWeatherManager
+from tuxemon.world.world_map_index import WorldMapIndex
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
@@ -174,6 +175,15 @@ class BaseClient(ABC):
             self.boundary,
             self.event_engine,
         )
+        _spyder_world = paths.mods_folder / "tuxemon" / "maps" / "spyder.world"
+        self.world_index: WorldMapIndex | None = (
+            WorldMapIndex(_spyder_world, _spyder_world.parent)
+            if _spyder_world.exists()
+            else None
+        )
+        self.map_transition.world_index = self.world_index
+        self.map_transition._resolution = context.resolution
+        self.map_transition._scale = context.scale
         self.teleporter = Teleporter(
             self.map_transition,
             self.npc_manager,

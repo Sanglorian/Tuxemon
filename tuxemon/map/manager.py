@@ -68,6 +68,7 @@ class MapManager:
         self.current_map: AbstractMap | None = None
         self.maps: dict[str, Any] = {}
         self._map_type_slug: str | None = None
+        self.adjacent_maps: list[AbstractMap] = []
 
     @property
     def map_slug(self) -> str:
@@ -183,10 +184,17 @@ class MapManager:
         if self.current_map:
             self.current_map.clear_inits()
 
+    def set_adjacent_maps(self, maps: list[AbstractMap]) -> None:
+        self.adjacent_maps = maps
+
+    def clear_adjacent_maps(self) -> None:
+        self.adjacent_maps = []
+
     def clear_map(self) -> None:
         self.current_map = None
         self.maps = {}
         self._map_type_slug = None
+        self.adjacent_maps = []
 
     def remove_init(self, event: EventObject) -> None:
         if self.current_map:

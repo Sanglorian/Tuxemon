@@ -657,6 +657,7 @@ def context():
 )
 def test_get_pos_from_tilepos(tilepos, offset, context):
     mock_map = MagicMock()
+    mock_map.seamless_renderer = None
     mock_map.renderer.get_center_offset.return_value = offset
 
     ts = context.tile_size
@@ -665,3 +666,14 @@ def test_get_pos_from_tilepos(tilepos, offset, context):
     expected = (expected_px + offset[0], expected_py + offset[1])
 
     assert get_pos_from_tilepos(mock_map, context, tilepos) == expected
+
+
+def test_get_pos_from_tilepos_prefers_seamless_renderer(context):
+    mock_map = MagicMock()
+    mock_map.renderer.get_center_offset.return_value = (999, 999)
+    mock_map.seamless_renderer.get_center_offset.return_value = (10, 20)
+
+    ts = context.tile_size
+    expected = (2 * ts[0] + 10, 3 * ts[1] + 20)
+
+    assert get_pos_from_tilepos(mock_map, context, Vector2(2, 3)) == expected

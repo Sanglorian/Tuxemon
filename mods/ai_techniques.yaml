@@ -1,29 +1,182 @@
 techniques:
-  slug: # Can be a monster_slug (wild battle) or trainer_slug (trainer battle).
-    melee_bonus: 1.0  # Optional: Bonus multiplier applied to melee techniques.
-    touch_bonus: 1.0  # Optional: Bonus multiplier applied to touch-based techniques.
-    special_bonus: 1.0  # Optional: Bonus multiplier applied to special techniques.
-    ranged_bonus: 1.0  # Optional: Bonus multiplier applied to ranged techniques.
-    reach_bonus: 1.0  # Optional: Bonus multiplier applied to techniques with extended reach.
-    reliable_bonus: 1.0  # Optional: Bonus multiplier applied to techniques deemed reliable.
+  # ── Default config ────────────────────────────────────────────────────────────
+  # Used for any trainer or wild monster that doesn't have a specific entry below.
+  # Weights were derived from REINFORCE self-play training (500 battles, level 25).
+  #
+  # temperature controls move-selection randomness via softmax sampling:
+  #   low  (e.g. 1.0) → near-deterministic; exploitable by a knowledgeable player.
+  #   mid  (e.g. 6.0) → strategic but unpredictable; ~80% chance of best typed move.
+  #   high (e.g. 20+) → near-random; ignores type chart almost entirely.
+  # Omit temperature (or set to null) to revert to pure argmax (legacy behaviour).
+  default:
+    elemental_multiplier_weight: 4.047  # type effectiveness (dominant factor; REINFORCE-trained)
+    power_weight: 2.885                 # normalised move power
+    accuracy_weight: 0.739              # AI accepts some risk for high-power moves
+    potency_weight: 1.023               # DoT/condition potency vs target HP
+    status_weight: 0.834                # flat bonus for moves with a "give" (status) effect
+    speed_weight: -0.737                # slow moves preferred (they tend to have higher power)
+    speed_urgency_weight: -0.212        # negative: speed doesn't help when low HP in general play
+    stat_matchup_weight: 1.0            # reward moves whose range type uses the user's
+                                        # stronger attack stat AND hits the opponent's
+                                        # weaker defensive stat. Score in [-2, +2]:
+                                        #   melee/touch → user melee vs target armour/dodge
+                                        #   reach/ranged → user ranged vs target armour/dodge
+    recharge_weight: -0.3               # penalise high-recharge moves (per turn of lockout)
+    temperature: 6.0
 
-    # Optional: Weight assigned to the base power of a technique. Higher values indicate prioritization of power.
-    power_weight: 1.0
+  # ── All available fields (reference) ─────────────────────────────────────────
+  # Any field omitted from an entry is treated as None (feature disabled).
+  # Fields not set in a per-trainer entry do NOT inherit from default.
+  #
+  # Range bonuses — flat bonus added to the score for moves of that range type:
+  #   melee_bonus, touch_bonus, ranged_bonus, reach_bonus, reliable_bonus, special_bonus
+  #
+  # power_weight: weight on normalised move power (power / 3.0)
+  # accuracy_weight: weight on move accuracy (0.0–1.0)
+  # potency_weight: weight on condition potency × target HP ratio
+  #   (models DoT throughput — more ticks on a healthy target)
+  #
+  # elemental_multiplier_weight: weight on type-effectiveness multiplier
+  # elemental_health_scaling: scale the effectiveness score by this factor when
+  #   the opponent's current HP is above elemental_health_threshold (fraction 0–1).
+  #   Useful for making the AI focus type advantage more on fresh opponents.
+  # elemental_health_threshold: HP fraction above which elemental_health_scaling applies.
+  #
+  # speed_weight: base preference for faster techniques. Normalized technique speed
+  #   runs from -1.0 (extremely_slow) to +1.0 (extremely_fast); multiplied by this
+  #   weight and added to the score.  Positive = prefer fast moves; negative = prefer
+  #   slow (powerful) moves; null = ignore speed entirely.
+  # speed_urgency_weight: additional speed preference scaled by (1 − user HP ratio).
+  #   Zero contribution at full HP; grows linearly as HP falls to zero.  Positive
+  #   means "prefer fast moves more when near death"; negative means the opposite.
+  #   Trained independently of speed_weight via REINFORCE.
+  #
+  # stat_matchup_weight: reward choosing moves that exploit the stat matchup.
+  #   Score = (user_align + target_weak) × weight, each term in [-1, +1]:
+  #     user_align:  +1 when move uses user's dominant attack stat (melee or ranged),
+  #                  -1 when it uses the weaker one.
+  #     target_weak: +1 when move hits the opponent's lower defensive stat,
+  #                  -1 when it runs into the higher one.
+  #   A ranged-heavy monster using a ranged move vs a low-dodge target scores +2;
+  #   the same monster using a melee move vs that target scores near 0.
+  #   Range-to-stat mapping (from range_map.yaml):
+  #     melee  → user melee  vs target armour
+  #     touch  → user melee  vs target dodge
+  #     reach  → user ranged vs target armour
+  #     ranged → user ranged vs target dodge
+  #
+  # status_weight: flat bonus for moves that apply a condition via the "give" effect.
+  #   Rewards control-oriented play (sleep, confuse, paralyse, enrage, etc.) regardless
+  #   of target HP.  Set alongside potency_weight to also value DoT throughput, or alone
+  #   to focus purely on status infliction.
+  #
+  # recharge_weight: multiplied by technique.cooldown.duration (number of lockout turns).
+  #   Use a negative value to penalise high-recharge moves (e.g. -0.5 per turn).
+  #   Leave null to ignore cooldown entirely.
+  #
+  # ko_weight: bonus proportional to KO potential, clamped to [0, 1].
+  #   Estimated as min(1, normalised_power × type_effectiveness / opponent_hp_ratio).
+  #   Peaks when a strong, effective move can finish a weakened target.
+  #   Encourages opportunistic knock-outs rather than spreading damage evenly.
+  #
+  # spread_weight: flat bonus for moves whose target includes the whole enemy team
+  #   (enemy_team: true in the technique's target model).
+  #   Set positive in doubles to prefer splash / AoE moves; leave null in singles.
+  #   NOTE: a move tagged enemy_team hits whichever target get_targets() returns on
+  #   a hit — it does NOT automatically deal damage to both opponents.
+  #
+  # target_focus_weight: scaled by opponent.hp_ratio for target selection in doubles.
+  #   Negative → prefer weakened targets (KO focus, e.g. -1.0).
+  #   Positive → prefer healthier targets (spread damage, e.g. +1.0).
+  #   Has no effect in singles (only one valid target).
+  #
+  # health_priority_threshold: reward healing moves when user HP < this fraction
+  # healing_weight: reward magnitude for healing when below threshold
+  # healing_penalty_threshold: penalise healing moves when user HP > this fraction
+  # healing_penalty_weight: penalty magnitude when above threshold
+  #
+  # temperature: softmax temperature for move selection (see default block above)
+  #
+  # ── Singles / Doubles differentiation ────────────────────────────────────────
+  # In doubles battles, check_ai_techs looks up "{slug}_doubles" before "{slug}",
+  # and "default_doubles" before "default".  Define a doubles-specific entry when
+  # you want different weights in doubles (e.g. reward spread moves, KO focus).
+  #
+  # Example — doubles entry for a trainer:
+  #   galaxy_master_doubles:
+  #     elemental_multiplier_weight: 4.0
+  #     power_weight: 2.7
+  #     accuracy_weight: 0.9
+  #     spread_weight: 1.0        # prefer spread/AoE moves
+  #     target_focus_weight: -1.0 # prefer weakened target for KO
+  #     temperature: 4.0
+  #
+  # ── Per-trainer / per-monster overrides ───────────────────────────────────────
+  # Key can be a trainer slug (trainer battle) or monster slug (wild battle).
+  # Lower temperature = sharper / harder AI.  Higher = more forgiving / erratic.
+  #
+  # Example — a hard final-boss trainer:
+  #   galaxy_master:
+  #     elemental_multiplier_weight: 4.0
+  #     power_weight: 2.7
+  #     accuracy_weight: 0.9
+  #     potency_weight: 0.6
+  #     stat_matchup_weight: 1.0
+  #     temperature: 2.0   # sharper: best move chosen ~96% of the time
+  #
+  # Example — a beginner trainer (more forgiving):
+  #   youngster_bob:
+  #     elemental_multiplier_weight: 4.0
+  #     power_weight: 2.7
+  #     accuracy_weight: 0.9
+  #     potency_weight: 0.6
+  #     temperature: 15.0  # near-random; type chart barely influences choices
+  #
+  # default_doubles: fallback config for doubles battles when no trainer/monster-specific
+  # doubles entry exists.  Prioritises spread moves and KO focus over singles defaults.
+  # Seed values match default; tune after: python scripts/battle_sim.py --hillclimb N -d
+  default_doubles:
+    elemental_multiplier_weight: 3.027  # type effectiveness (less dominant than singles)
+    power_weight: 2.209                 # normalised move power
+    accuracy_weight: 0.988              # accuracy matters more in doubles (2 active targets)
+    potency_weight: 1.226               # DoT valued more: more targets to tick on
+    status_weight: 0.922                # flat bonus for moves with a "give" (status) effect
+    speed_weight: -1.099                # slow/powerful moves even more preferred in doubles
+    speed_urgency_weight: -0.289        # negative: speed offers no desperation value in doubles
+    spread_weight: 1.847                # flat bonus for enemy_team moves in doubles
+    target_focus_weight: -0.5           # prefer weakened targets for KO in doubles
+    stat_matchup_weight: 1.0            # reward moves whose range type exploits the stat matchup
+    recharge_weight: -0.3               # penalise high-recharge moves (per turn of lockout)
+    temperature: 6.0
 
-    # Optional: Weight assigned to the accuracy of a technique. Higher values indicate prioritization of precision.
-    accuracy_weight: 1.0
+  # sim_trainer: used by the battle simulator's learned policy (do not remove).
+  # Weights trained via REINFORCE self-play (500 singles battles, level 25, lr=0.05).
+  sim_trainer:
+    elemental_multiplier_weight: 4.047   # type effectiveness — dominant
+    power_weight: 2.885                  # normalised move power
+    accuracy_weight: 0.739               # AI accepts some risk for power in singles
+    potency_weight: 1.023                # DoT throughput
+    status_weight: 0.834                 # flat bonus for status-applying moves
+    speed_weight: -0.737                 # slow/powerful moves strongly preferred
+    speed_urgency_weight: -0.212         # confirmed negative: speed not helpful near death
+    spread_weight: 1.372                 # AoE bonus (high-power moves are often AoE)
+    stat_matchup_weight: 1.0             # constant; not REINFORCE-trained
+    recharge_weight: -0.3                # constant; penalise high-cooldown moves
+    temperature: 6.0
 
-    # Optional: Weight assigned to elemental effectiveness. Higher values indicate prioritization of exploiting elemental advantages.
-    elemental_multiplier_weight: 1.0
-
-    # Optional: Scaling for elemental effectiveness based on opponent's health condition.
-    elemental_health_scaling: 1.0  # Higher values increase effectiveness against opponents with high health.
-    elemental_health_threshold: 1.0  # Threshold for scaling; effectiveness applies if opponent's health is above this percentage.
-
-    # Optional: Threshold and weight for rewarding healing techniques based on the target's health.
-    health_priority_threshold: 0.5  # Techniques are rewarded if the target's health is below this percentage.
-    healing_weight: 1.5  # Determines the significance of healing effectiveness.
-
-    # Optional: Threshold and weight for penalizing healing techniques if the target's health is near full.
-    healing_penalty_threshold: 0.9  # Techniques are penalized if the target's health is above this percentage.
-    healing_penalty_weight: 0.5  # Determines the significance of the penalty applied.
+  # sim_trainer_doubles: separate weights for doubles — trained independently so that
+  # singles dynamics do not bleed into doubles policy.
+  # Weights trained via REINFORCE self-play (500 doubles battles, level 25, lr=0.05).
+  sim_trainer_doubles:
+    elemental_multiplier_weight: 3.027   # type effectiveness — less dominant in doubles
+    power_weight: 2.209                  # normalised move power
+    accuracy_weight: 0.988               # accuracy matters more in doubles (2 active targets)
+    potency_weight: 1.226                # DoT valued more: more targets to tick on
+    status_weight: 0.922                 # flat bonus for status-applying moves
+    speed_weight: -1.099                 # slow/powerful moves even more preferred in doubles
+    speed_urgency_weight: -0.289         # negative: speed offers no desperation value in doubles
+    spread_weight: 1.847                 # AoE preferred more strongly than in singles
+    target_focus_weight: -0.5            # constant; prefer weakened target for KO focus
+    stat_matchup_weight: 1.0             # constant; not REINFORCE-trained
+    recharge_weight: -0.3                # constant; penalise high-cooldown moves
+    temperature: 6.0

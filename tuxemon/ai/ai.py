@@ -98,6 +98,7 @@ class SingleTechnique:
     reliable_bonus: float | None = None
     power_weight: float | None = None
     accuracy_weight: float | None = None
+    potency_weight: float | None = None
     elemental_multiplier_weight: float | None = None
     elemental_health_scaling: float | None = None
     elemental_health_threshold: float | None = None
@@ -105,6 +106,15 @@ class SingleTechnique:
     healing_weight: float | None = None
     healing_penalty_threshold: float | None = None
     healing_penalty_weight: float | None = None
+    temperature: float | None = None
+    speed_weight: float | None = None
+    speed_urgency_weight: float | None = None
+    stat_matchup_weight: float | None = None
+    status_weight: float | None = None
+    recharge_weight: float | None = None
+    ko_weight: float | None = None
+    spread_weight: float | None = None
+    target_focus_weight: float | None = None
 
 
 @dataclass

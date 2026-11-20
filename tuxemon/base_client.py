@@ -183,7 +183,6 @@ class BaseClient(ABC):
         )
         self.map_transition.world_index = self.world_index
         self.map_transition._resolution = context.resolution
-        self.map_transition._scale = context.scale
         self.teleporter = Teleporter(
             self.map_transition,
             self.npc_manager,

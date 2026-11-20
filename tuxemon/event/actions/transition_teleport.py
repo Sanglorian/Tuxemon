@@ -22,9 +22,10 @@ class TransitionTeleportAction(EventAction):
     Perform a teleport with a screen transition. Useful for allowing the player
     to go to different maps.
 
-    For transitions between overland maps that are both listed in the world
-    file (spyder.world), the screen fade is skipped so the transition is
-    seamless.
+    When the player walks across a border between two maps listed in the
+    world file (spyder.world), and the destination lines up with where the
+    player is in world space, the screen fade is skipped so the transition
+    is seamless. Doors and warps keep their fade.
 
     Script usage:
         .. code-block::
@@ -75,14 +76,20 @@ class TransitionTeleportAction(EventAction):
 
         world_index = getattr(session.client, "world_index", None)
         source_map = char.current_map or ""
-        if (
-            world_index is not None
-            and world_index.is_world_map(source_map)
-            and world_index.is_world_map(self.map_name)
+        if world_index is not None and world_index.is_seamless_link(
+            source_map, char.tile_pos, self.map_name, (self.x, self.y)
         ):
-            # Both maps are overland world maps — skip the fade entirely.
-            teleport_queue.enqueue(request)
-            session.client.teleporter.handle_next_teleport(char)
+            # Walking across a border between world maps: skip the fade.
+            # End the step the player was taking on the old map first;
+            # otherwise it carries on in the new map's coordinates and
+            # can drag the player through walls.
+            movement = session.client.movement_manager
+            held = movement.wants_to_move_char.get(char.slug)
+            char.abort_movement(preserve_position=True)
+            session.client.current_music.allow_instant_switch()
+            session.client.teleporter.seamless_teleport(char, request)
+            if held is not None and movement.is_movement_allowed(char):
+                movement.move_char(char, held)
             self.stop()
             return
 

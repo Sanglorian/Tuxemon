@@ -110,6 +110,13 @@ class MapLoader:
             self.process_and_merge_events(null_map, [file])
         return null_map
 
+    def peek_cached(self, path: str) -> AbstractMap | None:
+        """Return the cached map for *path* without ever loading from disk."""
+        resolved = fetch_asset("maps", f"{Path(path).stem}.tmx")
+        if not resolved or not self.enable_cache:
+            return None
+        return self.get_cached_map(str(Path(resolved).resolve()))
+
     def get_cached_map(self, normalized_path: str) -> AbstractMap | None:
         if normalized_path in self._cache:
             logger.debug(f"Cache hit for map '{normalized_path}'.")

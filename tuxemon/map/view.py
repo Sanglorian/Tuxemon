@@ -552,16 +552,46 @@ class MapRenderer(AbstractRenderer):
 
         centre = self._unclamped_camera_centre()
         scale = self.context.scale
+        ts = self.context.tile_size
         screen_rect = surface.get_rect()
+        # Screen position of the current map's top-left corner.
+        origin_x = screen_rect.width // 2 - round(centre.x)
+        origin_y = screen_rect.height // 2 - round(centre.y)
+        old_clip = surface.get_clip()
 
         for adj_map in adjacent:
+            renderer = adj_map.seamless_renderer
             adj_entry = self.world_index.get_entry(adj_map.filename)
-            if adj_entry is None or adj_map.seamless_renderer is None:
+            if adj_entry is None or renderer is None:
                 continue
-            dx = (curr_entry.world_x - adj_entry.world_x) * scale
-            dy = (curr_entry.world_y - adj_entry.world_y) * scale
-            adj_map.seamless_renderer.center((centre.x + dx, centre.y + dy))
-            adj_map.seamless_renderer.draw(surface, screen_rect, [])
+            dx = (adj_entry.world_x - curr_entry.world_x) * scale
+            dy = (adj_entry.world_y - curr_entry.world_y) * scale
+            map_w, map_h = adj_map.size
+            # Rough on-screen bounds, padded a tile, to skip maps that are
+            # out of view without touching their renderer at all.
+            rough = Rect(
+                origin_x + dx, origin_y + dy, map_w * ts[0], map_h * ts[1]
+            ).inflate(ts[0] * 2, ts[1] * 2)
+            if not rough.colliderect(screen_rect):
+                continue
+            renderer.center((centre.x - dx, centre.y - dy))
+            # pyscroll fills everything outside the map with black, so clip
+            # to the map's exact area or it would cover other neighbours.
+            visible = self._renderer_map_rect(renderer, adj_map).clip(
+                screen_rect
+            )
+            if visible.width <= 0 or visible.height <= 0:
+                continue
+            surface.set_clip(visible)
+            renderer.draw(surface, screen_rect, [])
+        surface.set_clip(old_clip)
+
+    def _renderer_map_rect(self, renderer: Any, game_map: AbstractMap) -> Rect:
+        """Screen rect covered by *game_map*'s tiles, given its renderer."""
+        offset_x, offset_y = renderer.get_center_offset()
+        ts = self.context.tile_size
+        map_w, map_h = game_map.size
+        return Rect(offset_x, offset_y, map_w * ts[0], map_h * ts[1])
 
     def _get_and_position_surfaces(
         self, current_map: AbstractMap
@@ -586,28 +616,6 @@ class MapRenderer(AbstractRenderer):
             return current_map.seamless_renderer
         return current_map.renderer
 
-    def _compute_map_clip_rect(
-        self, current_map: AbstractMap, surface: Surface
-    ) -> Rect:
-        """Screen rect that exactly covers the current map's tile area.
-
-        When the seamless (unclamped) renderer is active, we clip drawing
-        to this rect so the adjacent maps drawn beneath show through at
-        map edges.
-        """
-        camera = self.camera_manager.get_active_camera()
-        if camera is None:
-            return surface.get_rect()
-        entity = camera.tracker.entity
-        ts = self.context.tile_size
-        map_w, map_h = current_map.size
-        screen_w, screen_h = surface.get_size()
-        player_px = entity.position.x * ts[0] + ts[0] / 2
-        player_py = entity.position.y * ts[1] + ts[1] / 2
-        origin_x = screen_w // 2 - int(player_px)
-        origin_y = screen_h // 2 - int(player_py)
-        return Rect(origin_x, origin_y, map_w * ts[0], map_h * ts[1])
-
     def _draw_map_and_sprites(
         self,
         surface: Surface,
@@ -617,10 +625,11 @@ class MapRenderer(AbstractRenderer):
         """Draws the map and sprites onto the surface."""
         active = self._get_active_renderer(current_map)
         assert active
-        if active is current_map.seamless_renderer:
+        seamless = active is current_map.seamless_renderer
+        if seamless:
             # Clip to the map's actual tile area so adjacent maps (drawn
             # beneath) are visible where the current map has no tiles.
-            clip_rect = self._compute_map_clip_rect(current_map, surface)
+            clip_rect = self._renderer_map_rect(active, current_map)
             old_clip = surface.get_clip()
             surface.set_clip(clip_rect)
             active.draw(surface, surface.get_rect(), screen_surfaces)

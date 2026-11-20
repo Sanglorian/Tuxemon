@@ -160,6 +160,26 @@ class Teleporter:
         self.npc_manager.place_npc_on_map(character, map_name, x, y)
         logger.debug(f"{character.slug} has completed teleportation.")
 
+    def seamless_teleport(
+        self, character: NPC, request: TeleportRequest
+    ) -> None:
+        """
+        Move a character to a world-adjacent map without a screen fade.
+
+        Unlike :meth:`execute_teleport`, this does not push TeleporterState:
+        that state swallows input for several frames, so a key released
+        during it would never register and the player would keep walking.
+        The caller is responsible for stopping and resuming movement.
+        """
+        self.last_teleport_request = request
+        self.map_transition.change_map(request.mapname)
+        self.map_transition.validate_coordinates(request.x, request.y)
+        self.npc_manager.place_npc_on_map(
+            character, request.mapname, request.x, request.y
+        )
+        if request.facing:
+            character.set_facing(request.facing)
+
     def prepare_teleport(self, character: NPC) -> None:
         """
         Prepare the character for teleportation by stopping movement and

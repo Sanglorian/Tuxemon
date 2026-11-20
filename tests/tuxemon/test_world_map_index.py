@@ -254,3 +254,87 @@ def test_real_spyder_adjacency():
     assert "spyder_route4.tmx" in names
     assert "spyder_route5.tmx" in names
     assert "spyder_routea.tmx" in names
+
+
+def test_touching_entries_include_edge_and_corner_neighbours(tmp_path):
+    for name in ("mid.tmx", "east.tmx", "corner.tmx", "far.tmx"):
+        make_tmx(tmp_path, name, 10, 10)
+    size = 10 * NATIVE_TILE
+    world = make_world_file(
+        tmp_path,
+        [
+            {"fileName": "mid.tmx", "x": 0, "y": 0, "width": 0, "height": 0},
+            {
+                "fileName": "east.tmx",
+                "x": size,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+            },
+            {
+                "fileName": "corner.tmx",
+                "x": size,
+                "y": size,
+                "width": 0,
+                "height": 0,
+            },
+            # Two tiles away: nearby, but not touching.
+            {
+                "fileName": "far.tmx",
+                "x": -size - 2 * NATIVE_TILE,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+            },
+        ],
+    )
+    idx = WorldMapIndex(world, tmp_path)
+    names = {e.filename for e in idx.get_touching_entries("mid.tmx")}
+    assert names == {"east.tmx", "corner.tmx"}
+
+
+def test_touching_entries_unknown_map(tmp_path):
+    make_tmx(tmp_path, "a.tmx", 10, 10)
+    world = make_world_file(
+        tmp_path,
+        [{"fileName": "a.tmx", "x": 0, "y": 0, "width": 0, "height": 0}],
+    )
+    assert WorldMapIndex(world, tmp_path).get_touching_entries("x.tmx") == []
+
+
+def _east_west(tmp_path: Path) -> WorldMapIndex:
+    make_tmx(tmp_path, "west.tmx", 10, 10)
+    make_tmx(tmp_path, "east.tmx", 10, 10)
+    size = 10 * NATIVE_TILE
+    world = make_world_file(
+        tmp_path,
+        [
+            {"fileName": "west.tmx", "x": 0, "y": 0, "width": 0, "height": 0},
+            {
+                "fileName": "east.tmx",
+                "x": size,
+                "y": 0,
+                "width": 0,
+                "height": 0,
+            },
+        ],
+    )
+    return WorldMapIndex(world, tmp_path)
+
+
+def test_seamless_link_for_walk_across_border(tmp_path):
+    idx = _east_west(tmp_path)
+    # Standing on west's last column, arriving on east's first column.
+    assert idx.is_seamless_link("west.tmx", (9, 4), "east.tmx", (0, 4))
+
+
+def test_no_seamless_link_when_destination_is_far_away(tmp_path):
+    idx = _east_west(tmp_path)
+    # A door or warp: same pair of maps, but nowhere near each other.
+    assert not idx.is_seamless_link("west.tmx", (2, 2), "east.tmx", (7, 8))
+
+
+def test_no_seamless_link_for_unknown_or_same_map(tmp_path):
+    idx = _east_west(tmp_path)
+    assert not idx.is_seamless_link("west.tmx", (9, 4), "cave.tmx", (0, 4))
+    assert not idx.is_seamless_link("west.tmx", (1, 1), "west.tmx", (2, 1))

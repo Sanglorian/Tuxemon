@@ -455,24 +455,25 @@ def scaled_image_loader(
     # load the tileset image
     image = load(filename)
 
-    # scale the tileset image to match game scale
-    scaled_size = scaling.scale_tuple(image.get_size())
-    image = scale(image, scaled_size)
-
+    # Tiles are scaled one at a time as pytmx asks for them, rather than
+    # scaling the whole tileset up front. A map uses only part of each
+    # tileset, and scaling a large tileset in one call is slow and holds
+    # the GIL, stalling the game while maps load in the background. The
+    # scale factor is a whole number and scaling is nearest-neighbour, so
+    # the pixels are identical either way.
     def load_image(
         rect: tuple[int, int, int, int] | None = None,
         flags: TileFlags | None = None,
     ) -> Surface:
         if rect:
-            # scale the rect to match the scaled image
-            rect = scaling.scale_tuple(rect)
             try:
                 tile: Surface = image.subsurface(rect)
             except ValueError:
                 logger.error("Tile bounds outside bounds of tileset image")
                 raise
         else:
-            tile = image.copy()
+            tile = image
+        tile = scale(tile, scaling.scale_tuple(tile.get_size()))
 
         if flags:
             tile = handle_transformation(tile, flags)

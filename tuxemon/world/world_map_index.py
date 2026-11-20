@@ -151,3 +151,46 @@ class WorldMapIndex:
             and e.world_y < y1
             and e.world_y + e.pixel_height > y0
         ]
+
+    def get_touching_entries(
+        self, current_filename: str, margin_tiles: int = 1
+    ) -> list[WorldMapEntry]:
+        """
+        Return the entries that border *current_filename*.
+
+        A map counts as bordering when its bounds overlap the current map's
+        bounds grown by *margin_tiles* on every side. This picks up maps
+        that share an edge or a corner, while ignoring maps that are merely
+        nearby in the world file (for example interiors parked beside it).
+        """
+        current = self._entries.get(Path(current_filename).name)
+        if current is None:
+            return []
+        margin = margin_tiles * NATIVE_TILE
+        return self.get_nearby_entries(current_filename, (margin, margin))
+
+    def is_seamless_link(
+        self,
+        source_map: str,
+        source_tile: tuple[int, int],
+        dest_map: str,
+        dest_tile: tuple[int, int],
+        max_tiles: int = 1,
+    ) -> bool:
+        """
+        True if a teleport is a walk across a border between world maps.
+
+        Both maps must be in the world file and the destination tile must
+        be within *max_tiles* of the source tile in world space. Doors,
+        warps and interiors that happen to be listed in the world file
+        teleport much further than that, so they keep their screen fade.
+        """
+        src = self.get_entry(source_map)
+        dst = self.get_entry(dest_map)
+        if src is None or dst is None or src.filename == dst.filename:
+            return False
+        sx = src.world_x // NATIVE_TILE + source_tile[0]
+        sy = src.world_y // NATIVE_TILE + source_tile[1]
+        dx = dst.world_x // NATIVE_TILE + dest_tile[0]
+        dy = dst.world_y // NATIVE_TILE + dest_tile[1]
+        return max(abs(sx - dx), abs(sy - dy)) <= max_tiles

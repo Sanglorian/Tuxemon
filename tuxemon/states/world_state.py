@@ -150,6 +150,7 @@ class WorldState(State):
         self.client.npc_manager.update_npcs(dt, self.client)
         self.client.npc_manager.update_npcs_off_map(dt, self.client)
         self.client.map_renderer.update(dt)
+        self.client.map_transition.load_pending_adjacent()
 
     def draw(self, surface: Surface) -> None:
         """Draw the game world to the screen."""

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 from typing import Protocol
 
@@ -32,6 +33,18 @@ class MusicPlayerState:
 
         self.muted: bool = False
         self._user_volume = CONFIG.music_volume
+        self._instant_switch_until: float = 0.0
+
+    def allow_instant_switch(self, seconds: float = 2.0) -> None:
+        """
+        Skip fading out the current song for changes in the next *seconds*.
+
+        ``mixer.music.fadeout`` blocks until the fade finishes, which a
+        screen fade normally hides. Seamless map crossings have no screen
+        fade, so the game would visibly freeze; this lets the next song
+        start straight away (it still fades in).
+        """
+        self._instant_switch_until = time.monotonic() + seconds
 
     def load(
         self, filename: str, volume: float, loop: int, fade_ms: int
@@ -55,6 +68,9 @@ class MusicPlayerState:
     ) -> None:
         if self.is_playing_same_song(song):
             return
+
+        if time.monotonic() < self._instant_switch_until:
+            fade_previous = False
 
         if fade_previous and self.current_song and self.is_playing():
             try:

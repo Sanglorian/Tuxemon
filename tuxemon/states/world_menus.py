@@ -6,14 +6,18 @@ import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from pygame_menu.locals import ALIGN_LEFT
 from pygame_menu.menu import Menu
 
+from tuxemon.config import LOCALE_FONT_MAP
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.theme import TuxemonArrowSelection, get_theme
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import DIMGRAY_COLOR
 from tuxemon.platform.events import PlayerInput
 from tuxemon.states.monster_menu import MonsterMenuHandler
+from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -27,11 +31,10 @@ WorldMenuGameObj = Callable[[], object]
 
 
 def add_menu_items_to_pygame_menu(
-    menu: Menu, items: list[MenuItem], resolution: tuple[int, int]
+    menu: Menu, items: list[MenuItem], resolution: tuple[int, int], scale: int
 ) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
-    menu.add.vertical_fill()
 
     for item in items:
         label = item.label
@@ -43,7 +46,6 @@ def add_menu_items_to_pygame_menu(
                 label,
                 font_color=DIMGRAY_COLOR,
             )
-        menu.add.vertical_fill()
 
     width, height = resolution
     widgets_size = menu.get_size(widget=True)
@@ -53,6 +55,32 @@ def add_menu_items_to_pygame_menu(
         height - 2 * b_height,
         position=(width + b_width, b_height, False),
     )
+    spread_on_pixel_grid(menu, height - 2 * b_height, scale)
+
+
+def spread_on_pixel_grid(menu: Menu, menu_height: int, scale: int) -> None:
+    """Spread the entries evenly down the menu, in whole nominal pixels.
+
+    This does what vertical fills would, but fills split the spare space
+    into fractions of a nominal pixel, which blurs the grid. Instead every
+    entry gets the same whole-pixel pitch (the largest that fits) and the
+    block is centred, also on the grid.
+    """
+    widgets = menu.get_widgets()
+    if not widgets:
+        return
+    entry_height = widgets[0].get_height()
+    available = menu_height // scale
+    pitch = available // len(widgets)
+    block = (len(widgets) - 1) * pitch * scale + entry_height
+    top = (available - block // scale) // 2
+
+    menu._auto_centering = False
+    for widget in widgets:
+        widget.set_margin(0, pitch * scale - entry_height)
+        # pygame_menu starts each column 1 screen px down; take it back off.
+        widget.translate(0, top * scale - 1)
+    menu.render()
 
 
 class WorldMenuState(PygameMenuState):
@@ -75,6 +103,27 @@ class WorldMenuState(PygameMenuState):
             client=client, height=height, transition=SlideRight(), **kwargs
         )
 
+        # The Esc menu uses Arbata on a private copy of the theme, so other
+        # menus keep their font. It must be set before the menu is built.
+        # Locales with their own font (e.g. CJK, which Arbata lacks) keep it.
+        locale = self.client.config.locale
+        if locale.font_file == LOCALE_FONT_MAP["default"][0]:
+            scale_int = self.client.context.scaling.scale_int
+            theme = get_theme(self.client.context.scaling).copy()
+            theme.widget_font = transform_resource_filename(
+                "font", locale.arbata_font_file
+            )
+            theme.widget_font_size = self.font_type.arbata
+            # Set explicitly: other screens can change the shared theme's
+            # alignment, and this copy is taken each time the menu opens.
+            theme.widget_alignment = ALIGN_LEFT
+            # Arbata capitals sit 6 nominal px into each entry (2 px padding
+            # plus 4 px above the capitals); lower the 9 px cursor 5 px.
+            theme.widget_selection_effect = TuxemonArrowSelection(
+                scale_int(1), y_offset_nominal=5
+            )
+            self._menu_config["theme"] = theme
+
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)
         self.update_menu_from_manager()
@@ -84,7 +133,8 @@ class WorldMenuState(PygameMenuState):
         """Refreshes the menu display using items provided by the manager."""
         display = self.menu_manager.build_current_menu_items(self.char)
         resolution = self.client.context.resolution
-        add_menu_items_to_pygame_menu(self.menu, display, resolution)
+        scale = self.client.context.scaling.scale_int(1)
+        add_menu_items_to_pygame_menu(self.menu, display, resolution, scale)
 
     def open_monster_menu(self) -> None:
         self.handler.open_monster_menu()

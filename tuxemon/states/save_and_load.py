@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 
 # Layout in nominal pixels, so everything sits on the pixel grid at any
 # display scale. The popup is centred on the screen.
-POPUP_SIZE = (228, 100)
-SLOT_SIZE = (205, 24)
-SLOT_PITCH = 28
+POPUP_SIZE = (228, 122)
+SLOT_SIZE = (205, 31)
+SLOT_PITCH = 35
 # Where the first slot sits inside the popup (the cursor goes to its left).
 SLOT_OFFSET = (15, 10)
 # Minimal3x5 has no "/" glyph.

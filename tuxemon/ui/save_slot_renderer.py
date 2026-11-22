@@ -42,11 +42,12 @@ def render_thumbnail(save_data: SaveData, rect: Rect) -> Surface:
     return img
 
 
-# Text positions inside a slot, in nominal pixels. The label is vertically
-# centred in the 24 px slot; the player name and save time are two lines,
-# 10 px apart, in a column to the right of the thumbnail.
-LABEL_TOP = 5
+# Text positions inside a slot, in nominal pixels. In the 31 px slot, the
+# label's capitals are vertically centred, and so are the player name and
+# save time: two lines, 10 px apart, in a column right of the thumbnail.
+LABEL_TOP = 8
 DETAILS_LEFT = 102
+DETAILS_TOP = 3
 DETAILS_LINE_HEIGHT = 10
 
 
@@ -85,8 +86,9 @@ def render_slot_text(
 
     x = scaling.scale_int(DETAILS_LEFT)
     if save_data.npc_state and save_data.npc_state.player_name:
-        _blit_text(slot_image, save_data.npc_state.player_name, font, (x, 0))
+        y = scaling.scale_int(DETAILS_TOP)
+        _blit_text(slot_image, save_data.npc_state.player_name, font, (x, y))
 
     if save_data.time:
-        y = scaling.scale_int(DETAILS_LINE_HEIGHT)
+        y = scaling.scale_int(DETAILS_TOP + DETAILS_LINE_HEIGHT)
         _blit_text(slot_image, save_data.time, font, (x, y))

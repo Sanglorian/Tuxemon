@@ -114,6 +114,9 @@ class WorldMenuState(PygameMenuState):
                 "font", locale.arbata_font_file
             )
             theme.widget_font_size = self.font_type.arbata
+            # No drop shadow for now: the shared theme's shadow is offset a
+            # fixed 2 screen px, which is off the nominal grid at most scales.
+            theme.widget_font_shadow = False
             # Set explicitly: other screens can change the shared theme's
             # alignment, and this copy is taken each time the menu opens.
             theme.widget_alignment = ALIGN_LEFT

@@ -104,13 +104,9 @@ class SaveManager:
             else f"{T.translate('slot')} {slot}"
         )
 
-        text_rect = Rect(
-            0, rect.height // 2 - 10, rect.width, rect.height // 2
-        )
-
         render_slot_text(
             slot_image,
-            text_rect,
+            rect,
             slot_label,
             save_data,
             scaling=scaling,

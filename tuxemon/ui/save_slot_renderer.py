@@ -11,8 +11,7 @@ from pygame.surface import Surface
 from pygame.transform import smoothscale
 
 from tuxemon.locale.locale import T
-from tuxemon.platform.const.graphics import WHITE_COLOR
-from tuxemon.ui.text import draw_text
+from tuxemon.platform.const.graphics import FONT_COLOR, WHITE_COLOR
 
 if TYPE_CHECKING:
     from pygame.font import Font
@@ -43,12 +42,25 @@ def render_thumbnail(save_data: SaveData, rect: Rect) -> Surface:
     return img
 
 
+# Text positions inside a slot, in nominal pixels. The label is vertically
+# centred in the 24 px slot; the player name and save time are two lines,
+# 10 px apart, in a column to the right of the thumbnail.
+LABEL_TOP = 5
+DETAILS_LEFT = 102
+DETAILS_LINE_HEIGHT = 10
+
+
+def _blit_text(
+    surface: Surface, text: str, font: Font, position: tuple[int, int]
+) -> None:
+    surface.blit(font.render(text, True, FONT_COLOR), position)
+
+
 def render_empty_slot(
     rect: Rect, scaling: ScalingStrategy, font: Font, slot: int
 ) -> Surface:
     """Render the 'empty slot' UI block."""
     slot_image = Surface(rect.size, SRCALPHA)
-    text_rect = rect.move(0, rect.height // 2 - 10)
 
     label = (
         T.translate("menu_no_autosave")
@@ -56,13 +68,7 @@ def render_empty_slot(
         else T.translate("empty_slot")
     )
 
-    draw_text(
-        slot_image,
-        label,
-        text_rect,
-        scaling=scaling,
-        font=font,
-    )
+    _blit_text(slot_image, label, font, (0, scaling.scale_int(LABEL_TOP)))
     return slot_image
 
 
@@ -75,30 +81,12 @@ def render_slot_text(
     font: Font,
 ) -> None:
     """Draw slot number, player name, and time."""
-    draw_text(
-        slot_image,
-        slot_label,
-        rect,
-        scaling=scaling,
-        font=font,
-    )
+    _blit_text(slot_image, slot_label, font, (0, scaling.scale_int(LABEL_TOP)))
 
-    x = int(rect.width * 0.5)
-
+    x = scaling.scale_int(DETAILS_LEFT)
     if save_data.npc_state and save_data.npc_state.player_name:
-        draw_text(
-            slot_image,
-            save_data.npc_state.player_name,
-            (x, 0, 500, 500),
-            scaling=scaling,
-            font=font,
-        )
+        _blit_text(slot_image, save_data.npc_state.player_name, font, (x, 0))
 
     if save_data.time:
-        draw_text(
-            slot_image,
-            save_data.time,
-            (x, 50, 500, 500),
-            scaling=scaling,
-            font=font,
-        )
+        y = scaling.scale_int(DETAILS_LINE_HEIGHT)
+        _blit_text(slot_image, save_data.time, font, (x, y))

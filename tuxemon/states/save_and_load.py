@@ -5,16 +5,24 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
+from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import (
+    FONT_COLOR,
+    FONT_SIZE_ARBATA,
+    FONT_SIZE_BIGGEST,
+)
 from tuxemon.save_system.save_manager import SaveManager
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
+from tuxemon.ui.save_slot_renderer import LABEL_TOP
 from tuxemon.ui.text import draw_text
 
 if TYPE_CHECKING:
@@ -24,12 +32,15 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-SLOT_WIDTH_RATIO = 0.80
-SLOT_HEIGHT_RATIO = 6
-PAGE_LABEL_WIDTH = 80
-PAGE_LABEL_HEIGHT = 30
-PAGE_LABEL_MARGIN_RIGHT = 120
-PAGE_LABEL_MARGIN_BOTTOM = 60
+# Layout in nominal pixels, so everything sits on the pixel grid at any
+# display scale. The popup is centred on the screen.
+POPUP_SIZE = (228, 100)
+SLOT_SIZE = (205, 24)
+SLOT_PITCH = 28
+# Where the first slot sits inside the popup (the cursor goes to its left).
+SLOT_OFFSET = (15, 10)
+# Minimal3x5 has no "/" glyph.
+PAGE_SEPARATOR = "|"
 
 
 class PaginatedMenuState(PopUpMenu[None]):
@@ -42,9 +53,55 @@ class PaginatedMenuState(PopUpMenu[None]):
     """
 
     name: ClassVar[str] = "PaginatedMenuState"
+    # A fixed popup size: fitting it to the contents puts it off the grid.
+    shrink_to_items = False
 
     def __init__(self, client: BaseClient, **kwargs: Any):
         super().__init__(client=client, **kwargs)
+        scale_int = self.client.context.scaling.scale_int
+
+        self.rect = Rect(
+            0, 0, scale_int(POPUP_SIZE[0]), scale_int(POPUP_SIZE[1])
+        )
+        self.rect.center = self.client.context.rect.center
+        self.menu_items.line_spacing = scale_int(SLOT_PITCH)
+
+        # The page counter uses the minimal font, at a size where it's crisp.
+        self.page_font = Font(
+            fetch_asset("font", self.client.config.locale.minimal_font_file),
+            scale_int(FONT_SIZE_BIGGEST),
+        )
+
+        # The cursor is centred on each slot; offset it so its middle lines
+        # up with the label's capitals (1 nominal px above them, 2 below).
+        arrow = self.cursor_controller.arrow
+        caps = self.font.render("H", True, FONT_COLOR).get_bounding_rect()
+        arrow.y_offset = (
+            scale_int(LABEL_TOP)
+            + caps.top
+            - scale_int(1)
+            + arrow.rect.height // 2
+            - scale_int(SLOT_SIZE[1]) // 2
+        )
+
+    def setup_resources(self) -> None:
+        # Slot labels, player names and times are set in Arbata.
+        self.font_filename = self.client.config.locale.arbata_font_file
+        super().setup_resources()
+        self.set_font(size=FONT_SIZE_ARBATA)
+
+    def slot_rect(self) -> Rect:
+        scale_int = self.client.context.scaling.scale_int
+        return Rect(0, 0, scale_int(SLOT_SIZE[0]), scale_int(SLOT_SIZE[1]))
+
+    def calc_menu_items_rect(self) -> Rect:
+        scale_int = self.client.context.scaling.scale_int
+        return Rect(
+            self.rect.left + scale_int(SLOT_OFFSET[0]),
+            self.rect.top + scale_int(SLOT_OFFSET[1]),
+            scale_int(SLOT_SIZE[0]),
+            self.rect.height - scale_int(SLOT_OFFSET[1]),
+        )
 
     def reload_items(self) -> None:
         super().reload_items()
@@ -97,31 +154,28 @@ class PaginatedMenuState(PopUpMenu[None]):
         """Draw popup + page indicator."""
         super().draw(surface)
 
-        label = self.menu_items.page_label()
-        if not label:
+        if not self.menu_items.page_size:
             return
-
-        popup_rect = self.rect
-
-        text_rect = Rect(
-            popup_rect.right - PAGE_LABEL_MARGIN_RIGHT,
-            popup_rect.bottom - PAGE_LABEL_MARGIN_BOTTOM,
-            PAGE_LABEL_WIDTH,
-            PAGE_LABEL_HEIGHT,
+        label = (
+            f"{self.menu_items.current_page + 1}{PAGE_SEPARATOR}"
+            f"{self.menu_items.total_pages}"
         )
-
-        draw_text(
-            surface,
-            label,
-            text_rect,
-            scaling=self.client.context.scaling,
-            font=self.font,
+        image = self.page_font.render(label, True, FONT_COLOR)
+        # Put the glyphs themselves 2 nominal px inside the popup's border.
+        ink = image.get_bounding_rect()
+        inner = self.calc_internal_rect()
+        inset = self.client.context.scaling.scale_int(2)
+        surface.blit(
+            image,
+            (
+                inner.right - inset - ink.right,
+                inner.bottom - inset - ink.bottom,
+            ),
         )
 
 
 class SaveMenuState(PaginatedMenuState):
     name: ClassVar[str] = "SaveMenuState"
-    shrink_to_items = True
 
     def __init__(
         self,
@@ -139,13 +193,7 @@ class SaveMenuState(PaginatedMenuState):
         self.menu_items.page_size = self.save_slots_per_page
 
     def initialize_items(self) -> None:
-        rect = self.client.context.rect.copy()
-        slot_rect = Rect(
-            0,
-            0,
-            rect.width * SLOT_WIDTH_RATIO,
-            rect.height // SLOT_HEIGHT_RATIO,
-        )
+        slot_rect = self.slot_rect()
         for slot in SaveManager.all_slots(
             self.max_slots, include_autosave=False
         ):
@@ -245,7 +293,6 @@ class SaveMenuState(PaginatedMenuState):
 
 class LoadMenuState(PaginatedMenuState):
     name: ClassVar[str] = "LoadMenuState"
-    shrink_to_items = True
 
     def __init__(
         self,
@@ -263,13 +310,7 @@ class LoadMenuState(PaginatedMenuState):
         self.menu_items.page_size = self.save_slots_per_page
 
     def initialize_items(self) -> None:
-        rect = self.client.context.rect.copy()
-        slot_rect = Rect(
-            0,
-            0,
-            rect.width * SLOT_WIDTH_RATIO,
-            rect.height // SLOT_HEIGHT_RATIO,
-        )
+        slot_rect = self.slot_rect()
 
         for slot in SaveManager.all_slots(
             self.max_slots, include_autosave=False

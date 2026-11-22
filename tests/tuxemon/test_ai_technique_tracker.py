@@ -4,16 +4,18 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from tuxemon.ai.ai import SingleTechnique
 from tuxemon.ai.technique_tracker import (
     TechniqueScoreResult,
     TechniqueTracker,
     technique_score,
 )
+from tuxemon.db import Range
 
 
 @pytest.fixture
 def mock_config():
-    return MagicMock(
+    return SingleTechnique(
         elemental_multiplier_weight=1.0,
         elemental_health_threshold=0.5,
         elemental_health_scaling=2.0,
@@ -36,7 +38,7 @@ def mock_user():
 def healing_technique():
     tech = MagicMock(
         slug="heal",
-        range="melee",
+        range=Range.melee,
         power=0.0,
         accuracy=1.0,
         healing_power=10.0,
@@ -62,7 +64,7 @@ def mock_opponent():
 def mock_technique():
     tech = MagicMock(
         slug="fireball",
-        range="melee",
+        range=Range.melee,
         power=50,
         accuracy=0.8,
         healing_power=0.0,

@@ -50,7 +50,7 @@ def mock_evaluator():
 
 def test_choose_best_scored_move_picks_highest(strategy_base):
     ai = MagicMock()
-    config = MagicMock()
+    config = MagicMock(temperature=None)
 
     move1 = (MagicMock(slug="a"), MagicMock(slug="enemy"))
     move2 = (MagicMock(slug="b"), MagicMock(slug="enemy"))
@@ -63,7 +63,7 @@ def test_choose_best_scored_move_picks_highest(strategy_base):
 
 def test_choose_best_scored_move_tie_returns_first(strategy_base):
     ai = MagicMock()
-    config = MagicMock()
+    config = MagicMock(temperature=None)
 
     move1 = (MagicMock(slug="a"), MagicMock(slug="enemy"))
     move2 = (MagicMock(slug="b"), MagicMock(slug="enemy"))
@@ -76,7 +76,7 @@ def test_choose_best_scored_move_tie_returns_first(strategy_base):
 
 def test_choose_best_scored_move_negative_scores(strategy_base):
     ai = MagicMock()
-    config = MagicMock()
+    config = MagicMock(temperature=None)
 
     move1 = (MagicMock(slug="a"), MagicMock(slug="enemy"))
     move2 = (MagicMock(slug="b"), MagicMock(slug="enemy"))
@@ -360,6 +360,7 @@ def test_wild_ai_make_decision(mock_ai, mock_evaluator, mock_tracker):
     mock_trainers = MagicMock()
     mock_items = MagicMock()
     mock_techs = MagicMock()
+    mock_techs.techniques.get.return_value = MagicMock(temperature=None)
 
     strategy = WildAIDecisionStrategy(
         mock_evaluator,
@@ -397,7 +398,7 @@ def test_wild_ai_uses_best_scored_move(mock_ai):
     mock_ai.tracker.evaluate_technique.side_effect = [1.0, 10.0]
 
     ai_techs = MagicMock()
-    ai_techs.techniques = {"monster1": MagicMock()}
+    ai_techs.techniques = {"monster1": MagicMock(temperature=None)}
 
     mock_ai.monster.wild = True
 

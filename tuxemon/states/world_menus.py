@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import types
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_LEFT
 from pygame_menu.menu import Menu
+from pygame_menu.utils import make_surface
 
 from tuxemon.config import LOCALE_FONT_MAP
 from tuxemon.menu.menu import PygameMenuState
@@ -29,6 +31,9 @@ logger = logging.getLogger(__name__)
 
 WorldMenuGameObj = Callable[[], object]
 
+# Colour of the Esc menu's pixel shadow (#d8d8d8).
+PIXEL_SHADOW_COLOR = (216, 216, 216)
+
 
 def add_menu_items_to_pygame_menu(
     menu: Menu, items: list[MenuItem], resolution: tuple[int, int], scale: int
@@ -47,6 +52,11 @@ def add_menu_items_to_pygame_menu(
                 font_color=DIMGRAY_COLOR,
             )
 
+    render = pixel_shadow_renderer(scale)
+    for widget in menu.get_widgets():
+        widget._render_string = types.MethodType(render, widget)
+        widget._force_render()
+
     width, height = resolution
     widgets_size = menu.get_size(widget=True)
     b_width, b_height = menu.get_scrollarea().get_border_size()
@@ -56,6 +66,29 @@ def add_menu_items_to_pygame_menu(
         position=(width + b_width, b_height, False),
     )
     spread_on_pixel_grid(menu, height - 2 * b_height, scale)
+
+
+def pixel_shadow_renderer(scale: int) -> Callable[..., Any]:
+    """A pygame_menu text renderer with a 3-layer, 1 nominal px drop shadow.
+
+    The shadow is three copies of the text in the shadow colour: 1 nominal px
+    down, 1 down and right, and 1 right, so it stays on the pixel grid and
+    has no gaps along diagonal strokes.
+    """
+    offsets = ((0, scale), (scale, scale), (scale, 0))
+
+    def render(widget: Any, string: str, color: Any) -> Any:
+        text = widget._font_render_string(string, color)
+        shadow = widget._font_render_string(string, PIXEL_SHADOW_COLOR)
+        surface = make_surface(
+            text.get_width() + scale, text.get_height() + scale, alpha=True
+        )
+        for offset in offsets:
+            surface.blit(shadow, offset)
+        surface.blit(text, (0, 0))
+        return surface
+
+    return render
 
 
 def spread_on_pixel_grid(menu: Menu, menu_height: int, scale: int) -> None:
@@ -114,8 +147,9 @@ class WorldMenuState(PygameMenuState):
                 "font", locale.arbata_font_file
             )
             theme.widget_font_size = self.font_type.arbata
-            # No drop shadow for now: the shared theme's shadow is offset a
-            # fixed 2 screen px, which is off the nominal grid at most scales.
+            # The shared theme's shadow is offset a fixed 2 screen px, off
+            # the nominal grid at most scales; the entries draw their own
+            # (see pixel_shadow_renderer) instead.
             theme.widget_font_shadow = False
             # Set explicitly: other screens can change the shared theme's
             # alignment, and this copy is taken each time the menu opens.

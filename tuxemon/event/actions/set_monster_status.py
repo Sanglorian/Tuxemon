@@ -30,7 +30,9 @@ class SetMonsterStatusAction(EventAction):
         variable: Name of the variable where to store the monster id. If no
             variable is specified, all monsters get/lose status.
         status: Status to set. If no status is specified, the status is
-            cleared.
+            cleared. A status is applied through the normal status rules,
+            so a held immunity item or the monster's current status can
+            prevent it; the reason is logged.
     """
 
     name = "set_monster_status"
@@ -45,7 +47,15 @@ class SetMonsterStatusAction(EventAction):
             monster.status.clear_status(session)
         else:
             status = Status.create(value, monster, steps)
-            monster.status.add_status(status)
+            result = monster.status.apply_status(session, status)
+            if not result.applied:
+                reason = result.blocked_reason
+                logger.info(
+                    f"set_monster_status: '{value}' not applied to "
+                    f"'{monster.name}' "
+                    f"(reason: {reason.value if reason else 'unknown'}, "
+                    f"blocked by: {result.blocked_by})"
+                )
 
     def start(self, session: Session) -> None:
         player = session.player

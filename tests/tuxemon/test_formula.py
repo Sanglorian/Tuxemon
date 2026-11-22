@@ -17,6 +17,7 @@ from tuxemon.formula import (
     simple_damage_calculate,
     simple_damage_multiplier,
     simple_heal,
+    simple_seed_multiplier,
 )
 from tuxemon.monster.monster import Monster
 from tuxemon.monster.stats import BasicStats, CustomStatBoosts
@@ -289,6 +290,60 @@ def test_level_based_damage(dmg_env):
     dmg, mult = simple_damage_calculate(tech, user, target)
     assert dmg > 0
     assert mult > 0.0
+
+
+# TestSimpleSeedMultiplier (Same Element, Extra Damage)
+@pytest.fixture
+def seed_env():
+    fire = MagicMock(spec=Element)
+    fire.slug = "fire"
+    water = MagicMock(spec=Element)
+    water.slug = "water"
+
+    tech = MagicMock()
+    tech.types.current = [fire]
+
+    user = MagicMock()
+    return tech, user, fire, water
+
+
+def test_seed_multiplier_shared_element(seed_env):
+    tech, user, fire, _ = seed_env
+    user.types.current = [fire]
+    assert simple_seed_multiplier(user, tech) == config_combat.seed_multiplier
+
+
+def test_seed_multiplier_no_shared_element(seed_env):
+    tech, user, _, water = seed_env
+    user.types.current = [water]
+    assert simple_seed_multiplier(user, tech) == 1.0
+
+
+def test_seed_multiplier_partial_overlap(seed_env):
+    tech, user, fire, water = seed_env
+    user.types.current = [water, fire]
+    assert simple_seed_multiplier(user, tech) == config_combat.seed_multiplier
+
+
+def test_seed_applied_to_damage(dmg_env):
+    tech, user, target = dmg_env
+    tech.range = "melee"
+    user.get_combat_stats.return_value = BasicStats(melee=30)
+    target.get_combat_stats.return_value = BasicStats(armour=20)
+
+    user.types.current = []
+    base_dmg, base_mult = simple_damage_calculate(tech, user, target)
+
+    # share the technique's element to trigger the SEED bonus
+    user.types.current = list(tech.types.current)
+    seed_dmg, seed_mult = simple_damage_calculate(tech, user, target)
+
+    assert seed_dmg > base_dmg
+    assert pytest.approx(seed_dmg, rel=0.05) == (
+        base_dmg * config_combat.seed_multiplier
+    )
+    # SEED affects damage but not the returned effectiveness multiplier
+    assert seed_mult == base_mult
 
 
 # TestModifyMonsterCustomStat

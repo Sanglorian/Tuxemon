@@ -105,6 +105,9 @@ class CombatConfig:
     action_time: float
     multiplier_map: dict[float, str]
     multiplier_range: tuple[float, float]
+    # SEED (Same Element, Extra Damage) bonus applied when the user shares
+    # an element with the technique it is using.
+    seed_multiplier: float
     # speed test
     speed_factor: float
     speed_offset: float

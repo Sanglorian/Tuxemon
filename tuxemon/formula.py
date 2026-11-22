@@ -64,6 +64,28 @@ def simple_damage_multiplier(
     return multiplier
 
 
+def simple_seed_multiplier(user: Monster, technique: Technique) -> float:
+    """
+    Calculates the SEED (Same Element, Extra Damage) multiplier.
+
+    A monster using a technique that shares at least one element with the
+    monster itself deals extra damage.
+
+    Parameters:
+        user: The monster using the technique.
+        technique: The technique being used.
+
+    Returns:
+        ``config_combat.seed_multiplier`` if the user shares an element with
+        the technique, otherwise 1.0.
+    """
+    user_types = {element.slug for element in user.types.current}
+    shares_element = any(
+        element.slug in user_types for element in technique.types.current
+    )
+    return config_combat.seed_multiplier if shares_element else 1.0
+
+
 def simple_damage_calculate(
     technique: Technique,
     user: Monster,
@@ -138,9 +160,15 @@ def simple_damage_calculate(
         f"{[t.slug for t in target.types.current]} | multiplier={mult}"
     )
 
-    move_strength = technique.power * mult
+    seed = simple_seed_multiplier(user, technique)
     logger.debug(
-        f"  move_strength = power({technique.power}) * mult({mult}) = {move_strength}"
+        f"  SEED (same element): {[t.slug for t in user.types.current]} shares "
+        f"{[t.slug for t in technique.types.current]} | seed={seed}"
+    )
+
+    move_strength = technique.power * mult * seed
+    logger.debug(
+        f"  move_strength = power({technique.power}) * mult({mult}) * seed({seed}) = {move_strength}"
     )
 
     damage = int(user_strength * move_strength / target_resist)

@@ -3319,7 +3319,7 @@ msgstr ""
 msgid "spyder_route5_granny"
 msgstr "这个公园在宁德市的建设下,将花城的暴发户挡在了门外,显得更有人情味. "
 
-# msgid "spyder_leatherhouse1_radio_afternoon"
+# msgid "radio_route101_weekend_afternoon"
 # msgstr "An R&B song is playing. It's called \"Possessuns, Part II\". "
 msgid "spyder_leatherhouse2_tv"
 msgstr "一个绿色的小怪物正在把一艘船从沼泽地里抬出来."
@@ -6387,7 +6387,7 @@ msgstr "露天咖啡馆和市场"
 msgid "spyder_leathercbd_sign"
 msgstr "皮革城商业区"
 
-msgid "spyder_leatherhouse1_radio_afternoon"
+msgid "radio_route101_weekend_afternoon"
 msgstr "正在播放一首R&B歌曲.它被称为 \"Possessuns, Part II\"."
 
 msgid "spyder_flower_dojo_sign"
@@ -6963,20 +6963,20 @@ msgstr "随机"
 msgid "spyder_papertown_rival"
 msgstr "比莉的房子"
 
-msgid "spyder_rivalbedroom_radio_morning"
-msgstr "早晨:一首流行歌曲正在播放,歌名是\"全频之爱:心之通道的旅程\"."
+msgid "radio_route101_weekday_morning"
+msgstr "一首流行歌曲正在播放,歌名是\"全频之爱:心之通道的旅程\"."
 
-msgid "spyder_rivalbedroom_radio_afternoon"
-msgstr "下午:一首摇滚歌曲响起,歌名是\"崛起主宰:终极训练师的焚歌\"."
+msgid "radio_route101_weekday_afternoon"
+msgstr "一首摇滚歌曲响起,歌名是\"崛起主宰:终极训练师的焚歌\"."
 
-msgid "spyder_rivalbedroom_radio_dusk"
-msgstr "黄昏时分:一首乡村音乐缓缓流淌,歌名是\"挣脱枷锁,寻找力量:从恐惧到坚强\"."
+msgid "radio_route101_weekday_dusk"
+msgstr "一首乡村音乐缓缓流淌,歌名是\"挣脱枷锁,寻找力量:从恐惧到坚强\"."
 
-msgid "spyder_rivalbedroom_radio_dawn"
-msgstr "黎明时分:一首金属乐震撼播放,歌名是\"龙吟怒吼:击打的狂怒\"."
+msgid "radio_route101_weekday_dawn"
+msgstr "一首金属乐震撼播放,歌名是\"龙吟怒吼:击打的狂怒\"."
 
-msgid "spyder_rivalbedroom_radio_night"
-msgstr "晚上: 一首电子舞曲正轰鸣回响,歌名是\"机器人革命:机器人群起之始\"."
+msgid "radio_route101_weekday_night"
+msgstr "一首电子舞曲正轰鸣回响,歌名是\"机器人革命:机器人群起之始\"."
 
 msgid "spyder_rivaldownstairs_tv"
 msgstr "一群男学生流落荒岛,以及他们克服逆境的故事"

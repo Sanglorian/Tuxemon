@@ -23,10 +23,18 @@
 #       - `set_variables`: Optional variables to update after the broadcast.
 #
 # Notes:
-#   - Broadcasts are evaluated in order; the first matching one is used.
+#   - Broadcasts are evaluated in order; the first matching one is used. Put the
+#     most specific broadcasts first and leave broader ones as a fallback.
 #   - If no conditions match, the `default` dialogue is used.
 #   - This structure allows dynamic storytelling and reactive radio content.
 #   - Stations without a `frequency` will not be accessible via the tuner interface.
+#   - Game variable values are strings, so quote them ("true", not True).
+#   - `map_slugs` and each entry under `variables` accept either a single value
+#     or a list of accepted values, e.g. weekday: [saturday, sunday].
+#   - Time variables such as `stage_of_day`, `weekday` and `season` are refreshed
+#     by the `update_time` action, which runs on every map transition.
+#   - A condition on a variable that has never been set simply does not match, so
+#     keep an unconditional (or less specific) broadcast last as a safety net.
 #
 # Example station definition:
 #
@@ -34,18 +42,18 @@
 #   frequency: 88.3
 #   conditional_broadcasts:
 #     - conditions:
-#         variables: 
-#           quest_maple_delivered: True
-#           broadcast_q1_news_heard: False
-#       dialogue: 
+#         variables:
+#           quest_maple_delivered: "true"
+#           broadcast_q1_news_heard: "false"
+#       dialogue:
 #         - "radio_news_breaking_report_q1"
 #         - "radio_news_report_q1_details"
 #       set_variables:
-#         broadcast_q1_news_heard: True
+#         broadcast_q1_news_heard: "true"
 #
 #     - conditions:
-#         variables: 
-#           is_night: True
+#         variables:
+#           stage_of_day: [dusk, night]
 #       dialogue:
 #         - "radio_news_late_night_report"
 #
@@ -60,77 +68,72 @@ station_scrambled_frequency:
 station_route_rhythms:
   frequency: 94.7
   conditional_broadcasts:
-    # Bedroom broadcasts
+    # Weekend playlist -- listed first so it takes priority over the weekday one
     - conditions:
-        map_slugs: ["spyder_paper_rival_bedroom"]
         variables:
+          weekday: [saturday, sunday]
+          stage_of_day: "dawn"
+      dialogue:
+        - "radio_route101_weekend_dawn"
+
+    - conditions:
+        variables:
+          weekday: [saturday, sunday]
           stage_of_day: "morning"
       dialogue:
-        - "spyder_rivalbedroom_radio_morning"
+        - "radio_route101_weekend_morning"
 
     - conditions:
-        map_slugs: ["spyder_paper_rival_bedroom"]
         variables:
+          weekday: [saturday, sunday]
           stage_of_day: "afternoon"
       dialogue:
-        - "spyder_rivalbedroom_radio_afternoon"
+        - "radio_route101_weekend_afternoon"
 
     - conditions:
-        map_slugs: ["spyder_paper_rival_bedroom"]
         variables:
+          weekday: [saturday, sunday]
           stage_of_day: "dusk"
       dialogue:
-        - "spyder_rivalbedroom_radio_dusk"
+        - "radio_route101_weekend_dusk"
 
     - conditions:
-        map_slugs: ["spyder_paper_rival_bedroom"]
+        variables:
+          weekday: [saturday, sunday]
+          stage_of_day: "night"
+      dialogue:
+        - "radio_route101_weekend_night"
+
+    # Weekday playlist -- also the fallback if `weekday` has never been set
+    - conditions:
         variables:
           stage_of_day: "dawn"
       dialogue:
-        - "spyder_rivalbedroom_radio_dawn"
+        - "radio_route101_weekday_dawn"
 
     - conditions:
-        map_slugs: ["spyder_paper_rival_bedroom"]
-        variables:
-          stage_of_day: "night"
-      dialogue:
-        - "spyder_rivalbedroom_radio_night"
-
-    # Leather house broadcasts
-    - conditions:
-        map_slugs: ["spyder_leather_house1"]
         variables:
           stage_of_day: "morning"
       dialogue:
-        - "spyder_leatherhouse1_radio_morning"
+        - "radio_route101_weekday_morning"
 
     - conditions:
-        map_slugs: ["spyder_leather_house1"]
         variables:
           stage_of_day: "afternoon"
       dialogue:
-        - "spyder_leatherhouse1_radio_afternoon"
+        - "radio_route101_weekday_afternoon"
 
     - conditions:
-        map_slugs: ["spyder_leather_house1"]
         variables:
           stage_of_day: "dusk"
       dialogue:
-        - "spyder_leatherhouse1_radio_dusk"
+        - "radio_route101_weekday_dusk"
 
     - conditions:
-        map_slugs: ["spyder_leather_house1"]
-        variables:
-          stage_of_day: "dawn"
-      dialogue:
-        - "spyder_leatherhouse1_radio_dawn"
-
-    - conditions:
-        map_slugs: ["spyder_leather_house1"]
         variables:
           stage_of_day: "night"
       dialogue:
-        - "spyder_leatherhouse1_radio_night"
+        - "radio_route101_weekday_night"
 
   default:
     dialogue: ["radio_static_msgid"]

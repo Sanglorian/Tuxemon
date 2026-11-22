@@ -66,7 +66,12 @@ RADIO_DATA = Loader.get_radio_data()
 def _check_conditions(
     radio_state: NuPhoneRadioBase, conditions: dict[str, Any]
 ) -> bool:
-    """Checks if the required conditions (map_slugs and variables) are met."""
+    """
+    Checks if the required conditions (map_slugs and variables) are met.
+
+    Both ``map_slugs`` and each entry of ``variables`` accept either a single
+    value or a list of values; a list matches if any of its entries matches.
+    """
     required_map_slug = conditions.get("map_slugs")
     if required_map_slug:
         required_map_slug = (
@@ -81,7 +86,12 @@ def _check_conditions(
     if required_vars:
         game_vars = radio_state.char.game_variables
         for var_name, expected_value in required_vars.items():
-            if game_vars.get(var_name) != expected_value:
+            accepted_values = (
+                expected_value
+                if isinstance(expected_value, list)
+                else [expected_value]
+            )
+            if game_vars.get(var_name) not in accepted_values:
                 return False
     return True
 

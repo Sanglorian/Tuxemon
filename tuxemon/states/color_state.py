@@ -30,7 +30,8 @@ class ColorState(PygameMenuState):
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 
-        theme = get_theme(self.client.context.scaling)
+        # Copy: changing the shared theme would affect every later menu.
+        theme = get_theme(self.client.context.scaling).copy()
 
         if isinstance(_color, tuple) and len(_color) in (3, 4):
             theme.background_color = _color

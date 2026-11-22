@@ -37,7 +37,8 @@ class SetLanguage(PygameMenuState):
             **kwargs,
         )
 
-        theme = get_theme(self.client.context.scaling)
+        # Copy: changing the shared theme would affect every later menu.
+        theme = get_theme(self.client.context.scaling).copy()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         self._menu_config["theme"] = theme

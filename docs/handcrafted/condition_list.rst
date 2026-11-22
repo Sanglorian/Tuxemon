@@ -11,6 +11,7 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.celestial_is.CelestialIsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_at.CharAtCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_at_position.CharAtPositionCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.char_at_teleport_faint.CharAtTeleportFaintCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_defeated.CharDefeatedCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_exists.CharExistsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing.CharFacingCondition

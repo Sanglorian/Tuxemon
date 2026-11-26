@@ -813,6 +813,11 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 [Kelvin Shadewing](http://kelvinshadewing.net) is licensed under
 [XYG Open Source License v1.1](http://kelvinshadewing.net/?id=license).
 
+* "Held Item" crate modified by Sanglorian from the crate in
+["Kelvin Buildings"](https://wiki.tuxemon.org/File:Set_Pieces_by_Kelvin_Shadewing.png) by
+[Kelvin Shadewing](http://kelvinshadewing.net) is licensed under
+[XYG Open Source License v1.1](http://kelvinshadewing.net/?id=license).
+
 * ["Imperial Potion Item"](https://forum.tuxemon.org/thread.php?pid=866#p866) by
 [tamashihoshi](https://wiki.tuxemon.org/Tamashihoshi)
 is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)

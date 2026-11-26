@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.db import EffectPhase
 from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
@@ -20,9 +21,16 @@ class MultiAttackEffect(CoreEffect):
     """
     Applies the "multiattack" effect to a technique.
 
-    This effect allows a technique to be executed multiple times in the
-    same turn, up to the specified number of repetitions. Each successful
-    hit enqueues another attack action until the maximum count is reached.
+    The technique lands up to ``times`` hits in a single turn. Accuracy is
+    re-rolled before every hit and the chain stops at the first miss, so a
+    low accuracy technique rarely reaches its full hit count. The chain also
+    stops once the target is out of hit points: the last hit is clamped to
+    the target's remaining HP so a multi-hit technique never overkills.
+
+    Damage is applied to the target as each hit lands, exactly like the
+    ``damage`` effect does. The per-hit amounts are reported back through
+    ``hit_damages`` so the combat state can stage one animation cycle per
+    hit.
 
     **Parameters**
 
@@ -45,36 +53,61 @@ class MultiAttackEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         combat = session.client.combat_session
+        # multiattack re-rolls the hit chance for every hit, which would
+        # leave the user's stored roll pointing at the last re-roll. Other
+        # effects on the same technique must still be judged against the
+        # technique's original roll, so it's put back afterwards.
+        original_tech_hit = combat.get_tech_hit(user)
 
-        hit_count = 0
-        total_damage = 0
+        hit_damages: list[int] = []
         extras: list[str] = []
 
-        for _ in range(self.times):
-            combat.set_tech_hit(user)
-            hit_roll = combat.get_tech_hit(user)
-            hit = tech.accuracy >= hit_roll
+        try:
+            for _ in range(self.times):
+                combat.set_tech_hit(user)
+                if tech.accuracy < combat.get_tech_hit(user):
+                    break
 
-            if not hit:
-                break
+                damage, _ = formula.simple_damage_calculate(tech, user, target)
+                damage = min(damage, target.current_hp)
+                hit_damages.append(damage)
+                target.current_hp = max(0, target.current_hp - damage)
 
-            hit_count += 1
-            dmg, _ = formula.simple_damage_calculate(tech, user, target)
-            total_damage += dmg
+                if target.is_fainted:
+                    # a status such as diehard may bring the target back
+                    extras.extend(self._react_to_fainting(session, target))
+                    if target.is_fainted:
+                        break
+        finally:
+            combat.set_tech_hit(user, original_tech_hit)
 
+        hit_count = len(hit_damages)
         success = hit_count > 0
 
         if success:
-            target.current_hp = max(0, target.current_hp - total_damage)
             params = {"hit_count": hit_count}
-            extract_text = T.format("combat_multiattack", params)
-            extras = [extract_text]
+            extras.insert(0, T.format("combat_multiattack", params))
 
         return TechEffectResult(
             name=tech.name,
             success=success,
             should_tackle=success,
-            damage=total_damage,
+            damage=sum(hit_damages),
             extras=extras,
             hit_count=hit_count,
+            hit_damages=hit_damages,
         )
+
+    @staticmethod
+    def _react_to_fainting(session: Session, target: Monster) -> list[str]:
+        """
+        Lets the target's current status react to it running out of HP.
+
+        Returns:
+            The messages produced by the status, if any.
+        """
+        status = target.status.current_status
+        if status is None:
+            return []
+        result = status.use(session, EffectPhase.CHECK_PARTY_HP)
+        return list(result.extras)

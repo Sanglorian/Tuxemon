@@ -28,6 +28,7 @@ class TechEffectResult(EffectResult):
     element_multiplier: float = 0.0
     should_tackle: bool = False
     hit_count: int = 1
+    hit_damages: list[int] = field(default_factory=list)
 
 
 @dataclass

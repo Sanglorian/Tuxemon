@@ -59,12 +59,23 @@ MAX_BOX = MAX_KENNEL
 # menu icons on the left, the selected monster's details on the right.
 KENNEL_GRID_COLUMNS = 6
 KENNEL_ICON_SIZE = 24
-KENNEL_GRID_RECT = (4, 6, 168, 132)
+# Both boxes use the thin border: 2 px wide, with a 4 px margin around and
+# between them.
+GFX_KENNEL_BORDER = "gfx/borders/borders-thin.png"
+KENNEL_GRID_RECT = (4, 4, 174, 136)
 # First icon's offset inside the grid frame, and the distance between icons.
-KENNEL_GRID_OFFSET = (6, 6)
-KENNEL_GRID_PITCH = (26, 24)
-KENNEL_PANEL_RECT = (176, 6, 76, 132)
-KENNEL_PANEL_PADDING = 7
+KENNEL_GRID_OFFSET = (5, 4)
+KENNEL_GRID_PITCH = (28, 26)
+KENNEL_PANEL_RECT = (182, 4, 70, 136)
+KENNEL_PANEL_PADDING = 4
+# Tops of the panel's lines, from the panel's top (capitals' top for
+# Arbata text).
+KENNEL_PANEL_TITLE_TOP = 6
+KENNEL_PANEL_COUNT_TOP = 18
+KENNEL_PANEL_SPRITE_TOP = 31
+KENNEL_PANEL_NAME_TOP = 99
+KENNEL_PANEL_LEVEL_TOP = 112
+KENNEL_PANEL_HP_TOP = 119
 KENNEL_HP_BAR_HEIGHT = 8
 # Height of Minimal3x5's glyphs.
 KENNEL_MINIMAL_HEIGHT = 5
@@ -73,8 +84,15 @@ KENNEL_TEXT_COLOR = (0, 0, 0)
 KENNEL_COUNT_SEPARATOR = "/"
 # Arbata's capitals start 4 px into its line box.
 ARBATA_CAP_TOP = 4
-GFX_KENNEL_SELECTION_BORDER = "gfx/ui/monster/active_monster_slot_border.png"
-GFX_KENNEL_SELECTION_BG = "gfx/ui/monster/active_monster_slot_bg.png"
+# The selected icon is marked with the four arrows of the crosshairs used
+# to pick technique targets in combat, at full size, each centred on the
+# middle of one of the icon's edges.
+GFX_KENNEL_CROSSHAIRS = "gfx/ui/combat/crosshairs.png"
+# Where each arrow is in the crosshairs image: (left, top, width, height).
+KENNEL_CROSSHAIR_TOP = (29, 6, 6, 4)
+KENNEL_CROSSHAIR_BOTTOM = (29, 54, 6, 4)
+KENNEL_CROSSHAIR_LEFT = (6, 29, 4, 6)
+KENNEL_CROSSHAIR_RIGHT = (54, 29, 4, 6)
 # Holding a direction repeats it after a delay, in seconds.
 KENNEL_REPEAT_DELAY = 0.5
 KENNEL_REPEAT_INTERVAL = 0.08
@@ -261,16 +279,21 @@ class MonsterTakeState(State):
             fetch_asset("font", locale.minimal_font_file), FONT_SIZE_BIGGEST
         )
         self.background = load_image(BG_PC_KENNEL)
-        border = load_image(self.client.config.menu_border)
+        border = load_image(GFX_KENNEL_BORDER)
         self.frame = GraphicBox(Rect(0, 0, 1, 1), border)
         self.frame_fill = border.get_at(
             (border.get_width() // 2, border.get_height() // 2)
         )
-        selection = load_image(GFX_KENNEL_SELECTION_BORDER)
-        self.selection = GraphicBox(Rect(0, 0, 1, 1), selection)
-        self.selection_fill = load_image(GFX_KENNEL_SELECTION_BG).get_at(
-            (0, 0)
-        )
+        crosshairs = load_image(GFX_KENNEL_CROSSHAIRS)
+        self.arrows = {
+            side: crosshairs.subsurface(rect).copy()
+            for side, rect in (
+                ("top", KENNEL_CROSSHAIR_TOP),
+                ("bottom", KENNEL_CROSSHAIR_BOTTOM),
+                ("left", KENNEL_CROSSHAIR_LEFT),
+                ("right", KENNEL_CROSSHAIR_RIGHT),
+            )
+        }
         # An HP bar drawn at nominal size, from the unscaled border image.
         self.hp_bar = HpBar(
             replace(context, scaling=DefaultScaling(1), scale=1)
@@ -389,13 +412,21 @@ class MonsterTakeState(State):
                 KENNEL_ICON_SIZE,
                 KENNEL_ICON_SIZE,
             )
-            if index == self.selected_index:
-                highlight = Rect(
-                    cell.left - 1, cell.top, pitch_x, KENNEL_ICON_SIZE
-                )
-                surface.fill(self.selection_fill, highlight.inflate(-2, -2))
-                self.selection.draw(surface, highlight)
             surface.blit(self.icons[monster], cell)
+            if index == self.selected_index:
+                self._draw_crosshairs(surface, cell)
+
+    def _draw_crosshairs(self, surface: Surface, cell: Rect) -> None:
+        """Mark ``cell`` with an arrow centred on the middle of each edge,
+        half outside the icon so it shows against any icon."""
+        arrows = self.arrows
+        for side, (x, y) in (
+            ("top", cell.midtop),
+            ("bottom", cell.midbottom),
+            ("left", cell.midleft),
+            ("right", cell.midright),
+        ):
+            surface.blit(arrows[side], arrows[side].get_rect(center=(x, y)))
 
     def _draw_details(self, surface: Surface) -> None:
         panel = Rect(KENNEL_PANEL_RECT)
@@ -404,10 +435,16 @@ class MonsterTakeState(State):
         right = panel.right - KENNEL_PANEL_PADDING
 
         title = T.translate(self.box_name).upper()
-        self._blit_arbata(surface, title, left, panel.top + 8)
+        self._blit_arbata(
+            surface, title, left, panel.top + KENNEL_PANEL_TITLE_TOP
+        )
         count = f"{len(self.box)}{KENNEL_COUNT_SEPARATOR}{MAX_BOX}"
         blit_ink(
-            surface, self.minimal_font, count, right=right, top=panel.top + 20
+            surface,
+            self.minimal_font,
+            count,
+            right=right,
+            top=panel.top + KENNEL_PANEL_COUNT_TOP,
         )
 
         if not self.box:
@@ -415,10 +452,15 @@ class MonsterTakeState(State):
         monster = self.box[self.selected_index]
         front = self.fronts[monster]
         surface.blit(
-            front, front.get_rect(midtop=(panel.centerx, panel.top + 30))
+            front,
+            front.get_rect(
+                midtop=(panel.centerx, panel.top + KENNEL_PANEL_SPRITE_TOP)
+            ),
         )
-        self._blit_arbata(surface, monster.name, left, panel.top + 97)
-        level_top = panel.top + 110
+        self._blit_arbata(
+            surface, monster.name, left, panel.top + KENNEL_PANEL_NAME_TOP
+        )
+        level_top = panel.top + KENNEL_PANEL_LEVEL_TOP
         blit_ink(
             surface,
             self.minimal_font,
@@ -438,7 +480,12 @@ class MonsterTakeState(State):
         self.hp_bar.value = monster.hp_ratio
         self.hp_bar.draw(
             surface,
-            Rect(left, panel.top + 117, right - left, KENNEL_HP_BAR_HEIGHT),
+            Rect(
+                left,
+                panel.top + KENNEL_PANEL_HP_TOP,
+                right - left,
+                KENNEL_HP_BAR_HEIGHT,
+            ),
         )
 
     def _blit_arbata(

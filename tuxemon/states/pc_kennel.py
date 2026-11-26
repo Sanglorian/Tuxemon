@@ -3,27 +3,38 @@
 from __future__ import annotations
 
 import logging
-import math
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import UUID
 
-from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame import SRCALPHA
+from pygame.font import Font
+from pygame.rect import Rect
+from pygame.surface import Surface
 from pygame_menu.menu import Menu
-from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon.graphics import scale_surface
+from tuxemon.constants.asset_loader import fetch_asset
+from tuxemon.graphics import load_image, scale_surface
 from tuxemon.locale.locale import T
-from tuxemon.menu.interface import MenuItem
+from tuxemon.menu.interface import HpBar, MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.monster.renderer import MonsterRenderer
-from tuxemon.platform.const.graphics import BG_PC_KENNEL
+from tuxemon.platform.const import buttons, intentions
+from tuxemon.platform.const.graphics import (
+    BG_PC_KENNEL,
+    FONT_SIZE_ARBATA,
+    FONT_SIZE_BIGGEST,
+    GFX_HP_BAR,
+)
 from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
+from tuxemon.scaling import DefaultScaling
 from tuxemon.state.state import State
 from tuxemon.states.monster_menu import MonsterMenuState
-from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
+from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.menu_options import (
     MenuOptions,
     create_choice_options,
@@ -36,12 +47,37 @@ if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.monster.monster import Monster
+    from tuxemon.platform.events import PlayerInput
 
 
 MenuGameObj = Callable[[], object]
 
 
 MAX_BOX = MAX_KENNEL
+
+# Monster Take layout, in nominal pixels on the 256 x 144 screen: a grid of
+# menu icons on the left, the selected monster's details on the right.
+KENNEL_GRID_COLUMNS = 6
+KENNEL_ICON_SIZE = 24
+KENNEL_GRID_RECT = (4, 6, 168, 132)
+# First icon's offset inside the grid frame, and the distance between icons.
+KENNEL_GRID_OFFSET = (6, 6)
+KENNEL_GRID_PITCH = (26, 24)
+KENNEL_PANEL_RECT = (176, 6, 76, 132)
+KENNEL_PANEL_PADDING = 7
+KENNEL_HP_BAR_HEIGHT = 8
+# Height of Minimal3x5's glyphs.
+KENNEL_MINIMAL_HEIGHT = 5
+KENNEL_TEXT_COLOR = (0, 0, 0)
+# The kennel's count shows as monsters / capacity.
+KENNEL_COUNT_SEPARATOR = "/"
+# Arbata's capitals start 4 px into its line box.
+ARBATA_CAP_TOP = 4
+GFX_KENNEL_SELECTION_BORDER = "gfx/ui/monster/active_monster_slot_border.png"
+GFX_KENNEL_SELECTION_BG = "gfx/ui/monster/active_monster_slot_bg.png"
+# Holding a direction repeats it after a delay, in seconds.
+KENNEL_REPEAT_DELAY = 0.5
+KENNEL_REPEAT_INTERVAL = 0.08
 
 
 class MonsterActionHandler:
@@ -183,11 +219,17 @@ class MonsterActionHandler:
             self.client.state_manager.remove_state_by_name(name)
 
 
-class MonsterTakeState(PygameMenuState):
+class MonsterTakeState(State):
     """Menu for the Monster Take state.
 
-    Shows all tuxemon currently in a storage kennel, and selecting one puts it
-    into your current party."""
+    Shows all tuxemon currently in a storage kennel as a grid of icons, with
+    the selected one's details alongside. Selecting one opens its options
+    (take it into the party, move it, release it, or see its info and
+    techniques).
+
+    Everything is drawn at nominal size with the pixel fonts and unscaled
+    assets, then scaled up whole, so it sits exactly on the pixel grid.
+    """
 
     name: ClassVar[str] = "MonsterTakeState"
 
@@ -199,46 +241,213 @@ class MonsterTakeState(PygameMenuState):
         swap_target: Monster | None = None,
         **kwargs: Any,
     ) -> None:
+        super().__init__(client, **kwargs)
         self.box_name = box_name
         self.char = character
         self.monster_boxes = self.char.monster_boxes
-        self.box = self.monster_boxes.get_monsters(self.box_name)
         self.swap_target = swap_target
+        self.handler = MonsterActionHandler(
+            self.client, self.char, self.box_name, self.name
+        )
+        self.selected_index = 0
+        self._repeat_last = 0.0
 
-        width, height = client.context.resolution
-
-        columns = 3
-        num_widgets = 3
-        rows = math.ceil(len(self.box) / columns) * num_widgets
-
-        super().__init__(
-            client=client,
-            height=height,
-            width=width,
-            columns=columns,
-            rows=rows,
-            **kwargs,
+        context = self.client.context
+        locale = self.client.config.locale
+        self.name_font = Font(
+            fetch_asset("font", locale.arbata_font_file), FONT_SIZE_ARBATA
+        )
+        self.minimal_font = Font(
+            fetch_asset("font", locale.minimal_font_file), FONT_SIZE_BIGGEST
+        )
+        self.background = load_image(BG_PC_KENNEL)
+        border = load_image(self.client.config.menu_border)
+        self.frame = GraphicBox(Rect(0, 0, 1, 1), border)
+        self.frame_fill = border.get_at(
+            (border.get_width() // 2, border.get_height() // 2)
+        )
+        selection = load_image(GFX_KENNEL_SELECTION_BORDER)
+        self.selection = GraphicBox(Rect(0, 0, 1, 1), selection)
+        self.selection_fill = load_image(GFX_KENNEL_SELECTION_BG).get_at(
+            (0, 0)
+        )
+        # An HP bar drawn at nominal size, from the unscaled border image.
+        self.hp_bar = HpBar(
+            replace(context, scaling=DefaultScaling(1), scale=1)
+        )
+        self.hp_bar.border = GraphicBox(
+            Rect(0, 0, 1, 1), load_image(GFX_HP_BAR)
+        )
+        self.select_sound = self.client.sound_manager.load_sound(
+            self.client.config.menu_sound
         )
 
-        theme = self._setup_theme(BG_PC_KENNEL)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-        theme.title = True
-        self._menu_config["theme"] = theme
+        self.box: list[Monster] = []
+        self.icons: dict[Monster, Surface] = {}
+        self.fronts: dict[Monster, Surface] = {}
+        self.image = Surface((1, 1), SRCALPHA)
+        self.refresh()
 
-        column_width = fix_measure(self.menu._width, 0.33)
-        self.menu._column_max_width = [
-            column_width,
-            column_width,
-            column_width,
-        ]
-
-        menu_items_map = []
+    def refresh(self) -> None:
+        """Re-read the kennel (monsters may have left it) and redraw."""
+        self.box = sorted(
+            self.monster_boxes.get_monsters(self.box_name),
+            key=lambda x: x.slug,
+        )
         for monster in self.box:
-            menu_items_map.append(monster)
+            if monster not in self.icons:
+                renderer = MonsterRenderer(monster, scale=1)
+                self.icons[monster] = renderer.get_sprite("menu").image
+                self.fronts[monster] = renderer.get_sprite("front").image
+        last = max(0, len(self.box) - 1)
+        self.selected_index = min(self.selected_index, last)
+        self.redraw()
 
-        self.add_menu_items(self.menu, menu_items_map)
-        self.reset_theme()
+    def resume(self) -> None:
+        super().resume()
+        self.refresh()
+
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        if not self.box:
+            self.client.state_manager.pop_state(self)
+
+    def draw(self, surface: Surface) -> None:
+        surface.blit(self.image, (0, 0))
+
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
+        if event.button in (buttons.B, buttons.BACK, intentions.MENU_CANCEL):
+            if event.pressed:
+                self.client.state_manager.pop_state(self)
+            return None
+
+        if event.button in (buttons.A, intentions.SELECT):
+            if event.pressed and self.box:
+                self.select_sound.play()
+                monster = self.box[self.selected_index]
+                self.kennel_options(monster.instance_id.hex, self.handler)
+            return None
+
+        moves = {
+            buttons.LEFT: -1,
+            buttons.RIGHT: 1,
+            buttons.UP: -KENNEL_GRID_COLUMNS,
+            buttons.DOWN: KENNEL_GRID_COLUMNS,
+        }
+        if event.button in moves:
+            if event.pressed or self._repeat_due(event):
+                self.move_selection(moves[event.button])
+            return None
+
+        return event
+
+    def _repeat_due(self, event: PlayerInput) -> bool:
+        """Whether a held direction should move again."""
+        if not event.is_held(KENNEL_REPEAT_DELAY):
+            return False
+        if self.current_time - self._repeat_last < KENNEL_REPEAT_INTERVAL:
+            return False
+        self._repeat_last = self.current_time
+        return True
+
+    def move_selection(self, step: int) -> None:
+        index = self.selected_index + step
+        if not self.box or index < 0:
+            return
+        if index >= len(self.box):
+            # Moving down onto a short last row lands on its last monster.
+            if step != KENNEL_GRID_COLUMNS:
+                return
+            index = len(self.box) - 1
+            if index // KENNEL_GRID_COLUMNS == (
+                self.selected_index // KENNEL_GRID_COLUMNS
+            ):
+                return
+        self.selected_index = index
+        self.redraw()
+
+    def redraw(self) -> None:
+        nominal = self.background.copy()
+        self._draw_grid(nominal)
+        self._draw_details(nominal)
+        self.image = scale_surface(nominal, self.scale_int(1))
+
+    def _draw_frame(self, surface: Surface, rect: Rect) -> None:
+        surface.fill(self.frame_fill, rect.inflate(-2, -2))
+        self.frame.draw(surface, rect)
+
+    def _draw_grid(self, surface: Surface) -> None:
+        grid = Rect(KENNEL_GRID_RECT)
+        self._draw_frame(surface, grid)
+        left, top = grid.move(KENNEL_GRID_OFFSET).topleft
+        pitch_x, pitch_y = KENNEL_GRID_PITCH
+        for index, monster in enumerate(self.box):
+            row, column = divmod(index, KENNEL_GRID_COLUMNS)
+            cell = Rect(
+                left + column * pitch_x,
+                top + row * pitch_y,
+                KENNEL_ICON_SIZE,
+                KENNEL_ICON_SIZE,
+            )
+            if index == self.selected_index:
+                highlight = Rect(
+                    cell.left - 1, cell.top, pitch_x, KENNEL_ICON_SIZE
+                )
+                surface.fill(self.selection_fill, highlight.inflate(-2, -2))
+                self.selection.draw(surface, highlight)
+            surface.blit(self.icons[monster], cell)
+
+    def _draw_details(self, surface: Surface) -> None:
+        panel = Rect(KENNEL_PANEL_RECT)
+        self._draw_frame(surface, panel)
+        left = panel.left + KENNEL_PANEL_PADDING
+        right = panel.right - KENNEL_PANEL_PADDING
+
+        title = T.translate(self.box_name).upper()
+        self._blit_arbata(surface, title, left, panel.top + 8)
+        count = f"{len(self.box)}{KENNEL_COUNT_SEPARATOR}{MAX_BOX}"
+        blit_ink(
+            surface, self.minimal_font, count, right=right, top=panel.top + 20
+        )
+
+        if not self.box:
+            return
+        monster = self.box[self.selected_index]
+        front = self.fronts[monster]
+        surface.blit(
+            front, front.get_rect(midtop=(panel.centerx, panel.top + 30))
+        )
+        self._blit_arbata(surface, monster.name, left, panel.top + 97)
+        level_top = panel.top + 110
+        blit_ink(
+            surface,
+            self.minimal_font,
+            f"Lv {monster.level}",
+            left=left,
+            top=level_top,
+        )
+        # The gender symbol goes at the end of the level line: the longest
+        # names fill the panel's width on their own.
+        if monster.gender_symbol:
+            symbol = self.name_font.render(
+                monster.gender_symbol, False, KENNEL_TEXT_COLOR
+            )
+            ink = symbol.get_bounding_rect()
+            middle = level_top + KENNEL_MINIMAL_HEIGHT // 2
+            surface.blit(symbol, (right - ink.right, middle - ink.centery))
+        self.hp_bar.value = monster.hp_ratio
+        self.hp_bar.draw(
+            surface,
+            Rect(left, panel.top + 117, right - left, KENNEL_HP_BAR_HEIGHT),
+        )
+
+    def _blit_arbata(
+        self, surface: Surface, text: str, left: int, cap_top: int
+    ) -> None:
+        """Draw Arbata text with its capitals' top at ``cap_top``."""
+        image = self.name_font.render(text, False, KENNEL_TEXT_COLOR)
+        ink_left = image.get_bounding_rect().left
+        surface.blit(image, (left - ink_left, cap_top - ARBATA_CAP_TOP))
 
     def kennel_options(
         self, instance_id: str, handler: MonsterActionHandler
@@ -271,6 +480,8 @@ class MonsterTakeState(PygameMenuState):
             if kennels:
                 actions["move"] = lambda: handler.move(mon, kennels)
             actions["release"] = lambda: handler.release(mon)
+        actions["info"] = lambda: handler.info(mon)
+        actions["tech"] = lambda: handler.tech(mon)
 
         filtered_actions = {
             action: func
@@ -285,44 +496,21 @@ class MonsterTakeState(PygameMenuState):
             escape_key_exits=True,
         )
 
-    def add_menu_items(self, menu: Menu, items: Sequence[Monster]) -> None:
-        handler = MonsterActionHandler(
-            self.client, self.char, self.box_name, self.name
-        )
 
-        _sorted = sorted(items, key=lambda x: x.slug)
-        for monster in _sorted:
-            label = T.translate(monster.name).upper()
-            iid = monster.instance_id.hex
-            renderer = MonsterRenderer(monster, scale=self.factor)
-            surface = renderer.get_sprite("front").image
-            scaled = scale_surface(surface, self.factor * 0.125)
-            new_image = self._create_image_from_surface(scaled)
-            menu.add.banner(
-                new_image,
-                partial(self.kennel_options, iid, handler),
-                selection_effect=HighlightSelection(),
-            )
-            diff = round((monster.hp_ratio) * 100, 1)
-            level = f"Lv.{monster.level}"
-            menu.add.progress_bar(
-                level,
-                default=diff,
-                font_size=self.font_type.small,
-                align=ALIGN_CENTER,
-            )
-            menu.add.button(
-                label,
-                partial(handler.description_dialog, monster),
-                font_size=self.font_type.small,
-                align=ALIGN_CENTER,
-                selection_effect=HighlightSelection(),
-            )
-
-        box_label = T.translate(self.box_name).upper()
-        menu.set_title(
-            T.format(f"{box_label}: {len(self.box)}/{MAX_BOX}")
-        ).center_content()
+def blit_ink(
+    surface: Surface,
+    font: Font,
+    text: str,
+    top: int,
+    left: int | None = None,
+    right: int | None = None,
+) -> None:
+    """Draw text so its glyphs (not the font's empty rows) start at ``top``,
+    and start at ``left`` or end at ``right``."""
+    image = font.render(text, False, KENNEL_TEXT_COLOR)
+    ink = image.get_bounding_rect()
+    x = left - ink.left if left is not None else (right or 0) - ink.right
+    surface.blit(image, (x, top - ink.top))
 
 
 class MonsterBoxState(PygameMenuState):

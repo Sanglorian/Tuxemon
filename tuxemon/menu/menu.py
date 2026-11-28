@@ -916,9 +916,25 @@ class Menu(Generic[T], State):
             ani = self.animate_close()
             self.on_close()
             if ani:
-                ani.schedule(self.client.pop_state, ScheduleType.ON_FINISH)
+                ani.schedule(self._pop_self, ScheduleType.ON_FINISH)
             else:
-                self.client.pop_state()
+                self._pop_self()
+
+    def _pop_self(self) -> None:
+        """
+        Pop this menu once it has closed.
+
+        By the time a close animation ends, another state may have been
+        pushed on top (e.g. by input that reached this menu from a picker
+        above it); popping the top state would then remove that instead and
+        leave this menu stuck half-closed. If this menu is no longer on the
+        stack at all, the old behaviour (pop the current state) is kept, as
+        some callers rely on it (e.g. a dialog whose on_complete pops it).
+        """
+        if self in self.client.state_manager.active_states:
+            self.client.pop_state(self)
+        else:
+            self.client.pop_state()
 
     def anchor(self, attribute: str, value: int | tuple[int, int]) -> None:
         """

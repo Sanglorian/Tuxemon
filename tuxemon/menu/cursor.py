@@ -167,8 +167,10 @@ class MenuCursorController(Generic[T]):
         x += self.arrow.x_offset
         y += self.arrow.y_offset
 
+        # Cancel any move still under way, or it carries on to its old target
+        # (e.g. a row that no longer exists after a page change).
+        self.remove_animations(self.arrow.rect)
         if animate:
-            self.remove_animations(self.arrow.rect)
             return self.animate(
                 self.arrow.rect,
                 right=x,

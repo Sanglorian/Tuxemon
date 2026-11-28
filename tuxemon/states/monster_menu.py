@@ -93,6 +93,8 @@ STATS_COLUMN_GAP = 4
 STATS_VALUE_TEMPLATE = "999"
 # HP shows as current / maximum, or just the maximum when at full HP.
 STATS_HP_SEPARATOR = "/"
+# Stat names are dark blue so they stand apart from the (black) values.
+STATS_LABEL_COLOR = (24, 48, 128)
 # Light stripes in a filled box's background, counted up from the bottom
 # row inside its border (1 = the bottom row).
 BOX_STRIPE_ROWS_FROM_BOTTOM = (4, 2, 1)
@@ -585,7 +587,14 @@ class MonsterStatsDisplay:
                 for row_top, label, (_, value) in zip(
                     STATS_ROWS, labels, stats
                 ):
-                    blit_ink(nominal, font, label, left=label_x, top=row_top)
+                    blit_ink(
+                        nominal,
+                        font,
+                        label,
+                        left=label_x,
+                        top=row_top,
+                        color=STATS_LABEL_COLOR,
+                    )
                     blit_ink(nominal, font, value, left=value_x, top=row_top)
                 label_x = value_x + ink_width(font, template)
                 label_x += STATS_COLUMN_GAP
@@ -806,10 +815,11 @@ def blit_ink(
     top: int,
     left: int | None = None,
     right: int | None = None,
+    color: ColorLike = (0, 0, 0),
 ) -> None:
     """Draw text so its glyphs (not the font's empty rows) start at ``top``,
-    and start at ``left`` or end at ``right``."""
-    image = font.render(text, False, (0, 0, 0))
+    and start at ``left`` or end at ``right``, in ``color``."""
+    image = font.render(text, False, color)
     ink = image.get_bounding_rect()
     x = left - ink.left if left is not None else (right or 0) - ink.right
     surface.blit(image, (x, top - ink.top))

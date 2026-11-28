@@ -8,14 +8,16 @@ from pygame import Rect
 
 from tuxemon.database.runtime import db
 from tuxemon.db import DialogueModel
+from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
 LARGE_GUI_HEIGHT_RATIO = 0.4
-SMALL_GUI_HEIGHT_RATIO = 0.25
-SMALL_GUI_WIDTH_RATIO = 0.8
+# The dialog box's size in nominal pixels (256 x 144 screen), so its edges
+# land on the pixel grid: room for three lines of Arbata.
+DIALOG_SIZE = (204, 48)
 
 
 def scale_dialog_size(rect: Rect) -> Rect:
@@ -24,8 +26,9 @@ def scale_dialog_size(rect: Rect) -> Rect:
     if CONFIG.large_gui:
         new.height = int(rect.height * LARGE_GUI_HEIGHT_RATIO)
     else:
-        new.height = int(rect.height * SMALL_GUI_HEIGHT_RATIO)
-        new.width = int(rect.width * SMALL_GUI_WIDTH_RATIO)
+        scale = max(1, rect.width // NATIVE_RESOLUTION[0])
+        new.width = DIALOG_SIZE[0] * scale
+        new.height = DIALOG_SIZE[1] * scale
     return new
 
 

@@ -7,14 +7,19 @@ from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
+from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
+from tuxemon.config import LOCALE_FONT_MAP
+from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.graphics import load_and_scale
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import FONT_SIZE_ARBATA
 from tuxemon.platform.events import PlayerInput
 from tuxemon.sprite import Sprite
+from tuxemon.ui.draw import break_text_into_lines, get_font_height
 from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
 
@@ -24,6 +29,14 @@ if TYPE_CHECKING:
     from tuxemon.sprite import Sprite
 
 logger = logging.getLogger(__name__)
+
+# Arbata dialog text, in nominal pixels: lines 11 px apart, inset 2 px from
+# the left and right of the box's inside, with the first line's capitals
+# 2 px below its top. Arbata's capitals start 4 px into its line box.
+DIALOG_LINE_HEIGHT = 11
+DIALOG_TEXT_INSET = 2
+DIALOG_CAP_TOP = 2
+ARBATA_CAP_TOP = 4
 
 
 class DialogState(PopUpMenu[None]):
@@ -89,17 +102,34 @@ class DialogState(PopUpMenu[None]):
         scaling = self.client.context.scaling
         line_spacing = scaling.scale_int(final_box_style["line_spacing"])
 
-        internal_rect = self.calc_internal_rect().copy()
+        # The standard box uses Arbata, laid out on the pixel grid. Large GUI
+        # and locales with their own font (e.g. CJK, which Arbata lacks)
+        # keep the menu font.
+        locale = self.client.config.locale
+        self.pixel_text = (
+            not self.client.config.large_gui
+            and locale.font_file == LOCALE_FONT_MAP["default"][0]
+        )
+        text_font = self.font
+        if self.pixel_text:
+            text_font = Font(
+                fetch_asset("font", locale.arbata_font_file),
+                scaling.scale_int(FONT_SIZE_ARBATA),
+            )
+            line_spacing += scaling.scale_int(
+                DIALOG_LINE_HEIGHT
+            ) - get_font_height(text_font)
 
         self.dialog_box = TextArea(
-            font=self.font,
+            font=text_font,
             font_color=final_box_style["font_color"],
-            rect=internal_rect,
+            rect=self.calc_text_rect(),
             scaling=self.client.context.scaling,
             font_shadow=final_box_style["font_shadow"],
             h_alignment=final_box_style["h_alignment"],
             v_alignment=final_box_style["v_alignment"],
             line_spacing=line_spacing,
+            shadow=not self.pixel_text,
         )
         self.sprites.add(self.dialog_box)
 
@@ -107,11 +137,11 @@ class DialogState(PopUpMenu[None]):
         """Start the dialog when the state is opened."""
         super().on_open()
 
-        internal_rect = self.calc_internal_rect()
-        logger.debug(f"DialogState.on_open: internal rect {internal_rect}")
-        self.dialog_box.rect = internal_rect
+        text_rect = self.calc_text_rect()
+        logger.debug(f"DialogState.on_open: text rect {text_rect}")
+        self.dialog_box.rect = text_rect
 
-        self.dialog_box.image = Surface(internal_rect.size, SRCALPHA)
+        self.dialog_box.image = Surface(text_rect.size, SRCALPHA)
         self.dialog_box.image = self.dialog_box._render_background()
 
         if self.avatar:
@@ -122,6 +152,53 @@ class DialogState(PopUpMenu[None]):
 
         if not self.text_queue and not self.auto_close:
             self._timer_active = False
+
+    def calc_text_rect(self) -> Rect:
+        """The area the text is drawn in.
+
+        For Arbata, the box's inside, less the side insets, and raised so the
+        first line's capitals sit DIALOG_CAP_TOP below its top.
+        """
+        rect = self.calc_internal_rect().copy()
+        if not self.pixel_text:
+            return rect
+        scale_int = self.client.context.scaling.scale_int
+        raise_by = scale_int(ARBATA_CAP_TOP - DIALOG_CAP_TOP)
+        inset = scale_int(DIALOG_TEXT_INSET)
+        return Rect(
+            rect.left + inset,
+            rect.top - raise_by,
+            rect.width - 2 * inset,
+            rect.height + raise_by,
+        )
+
+    def lines_per_page(self) -> int:
+        """How many lines of text fit in the box."""
+        area = self.dialog_box
+        font_height = get_font_height(area.font)
+        line_height = font_height + area.line_spacing
+        if line_height <= 0:
+            return 1
+        return max(1, (area.rect.height - font_height) // line_height + 1)
+
+    def split_page(self, text: str) -> str:
+        """Return as much of ``text`` as fits in the box, and put the rest
+        back at the front of the queue as the next page."""
+        area = self.dialog_box
+        lines = list(
+            break_text_into_lines(
+                text, area.font, area.rect.width, allow_word_overflow=False
+            )
+        )
+        fit = self.lines_per_page()
+        if len(lines) <= fit:
+            return text
+        rest = lines[fit:]
+        while rest and not rest[0].strip():
+            rest.pop(0)
+        if rest:
+            self.text_queue.insert(0, "\n".join(rest))
+        return "\n".join(lines[:fit])
 
     def add_advance_button(self, button: int) -> None:
         """Add a button that can advance the dialog."""
@@ -185,6 +262,7 @@ class DialogState(PopUpMenu[None]):
             if not text:
                 return self.next_text()
 
+            text = self.split_page(text)
             self.dialog.alert(
                 message=text,
                 text_area=self.dialog_box,

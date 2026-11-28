@@ -62,12 +62,16 @@ class ShopItemMenuState(ShopMenuState[Item]):
                 )
                 qty = self.client.shop_manager.get_quantity(key)
                 label, _, price = generate_label(item, self.economy, qty)
-                self._add_menu_item(item, label, {"price": price})
+                self._add_menu_item(
+                    item, label, {"price": price}, price=price
+                )
             elif self.seller.is_player:
                 label, _, cost = generate_label(
                     item, self.economy, qty=None, seller_mode=True
                 )
-                self._add_menu_item(item, label, {"cost": cost})
+                self._add_menu_item(
+                    item, label, {"cost": cost}, price=cost
+                )
 
     def _get_selection_menu_params(
         self, menu_item: MenuItem[Item]

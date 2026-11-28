@@ -114,7 +114,9 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
             unavailable = (
                 cost > self.seller_manager.get_money() or monster.is_fainted
             )
-            self._add_menu_item(monster, label, {"cost": cost}, unavailable)
+            self._add_menu_item(
+                monster, label, {"cost": cost}, unavailable, price=cost
+            )
 
     def _get_selection_menu_params(
         self, menu_item: MenuItem[Monster]
@@ -181,7 +183,8 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
             return target_level * base
 
     def _format_monster_label(self, monster: Monster, cost: int) -> str:
-        return f"{monster.name} Lv.{monster.level} (${cost})"
+        # The cost is shown at the end of the row.
+        return f"{monster.name} Lv.{monster.level}"
 
     def _calculate_training_cost(self, monster: Monster) -> int:
         """Calculates the cost to level up a monster."""

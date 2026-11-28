@@ -16,6 +16,8 @@ from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
 from pygame.rect import Rect
+from pygame.surface import Surface
+from pygame_menu.locals import ORIENTATION_VERTICAL
 from pygame_menu.utils import make_surface
 
 from tuxemon.config import LOCALE_FONT_MAP
@@ -294,10 +296,44 @@ def keep_on_grid(
     menu.render()
 
 
+# The scrollbar's slider and arrows: the dark purple of the menu frame, so
+# they stand out against the pale track.
+PIXEL_SCROLLBAR_COLOR = (156, 142, 206)
+
+# Scrollbar track width, in nominal px. Odd, so the arrows have a point.
+PIXEL_SCROLLBAR_WIDTH = 5
+
+# Arrows at the ends of the scrollbar track, one row per string, pointing
+# up ("#" is filled). Each sits in a cell as tall as the track is wide,
+# with a 1 px gap on either side; the slider moves between the cells.
+PIXEL_SCROLLBAR_ARROW = ("..#..", ".###.", "#####")
+_ARROW_CELL = PIXEL_SCROLLBAR_WIDTH
+
+
 def setup_pixel_scrolling(theme: Theme, scale: int) -> None:
-    """Give a theme a scrollbar whose size is whole nominal px."""
-    theme.scrollbar_thick = 4 * scale
+    """Give a theme a scrollbar in whole nominal px, with a dark slider."""
+    theme.scrollbar_thick = PIXEL_SCROLLBAR_WIDTH * scale
     theme.scrollbar_slider_pad = scale
+    theme.scrollbar_slider_color = PIXEL_SCROLLBAR_COLOR
+    theme.scrollbar_slider_hover_color = PIXEL_SCROLLBAR_COLOR
+
+
+def _draw_scroll_arrows(surface: Surface, scale: int) -> None:
+    """Draw the up and down arrows at the ends of a vertical scrollbar."""
+    height = surface.get_height()
+    rows = len(PIXEL_SCROLLBAR_ARROW)
+    # Centred in the cell: 1 px above and below a 3 px arrow.
+    gap = (_ARROW_CELL - rows) // 2
+    for i, row in enumerate(PIXEL_SCROLLBAR_ARROW):
+        for x, pixel in enumerate(row):
+            if pixel != "#":
+                continue
+            up = (gap + i) * scale
+            down = height - (gap + i + 1) * scale
+            for y in (up, down):
+                surface.fill(
+                    PIXEL_SCROLLBAR_COLOR, Rect(x * scale, y, scale, scale)
+                )
 
 
 def snap_scrolling(menu: Menu, scale: int) -> None:
@@ -306,7 +342,9 @@ def snap_scrolling(menu: Menu, scale: int) -> None:
     pygame_menu scrolls by whole screen pixels (converted to and from the
     scrollbar's slider position, which rounds), so the entries drift off
     the grid. This rounds the scroll offsets, and the slider, to the grid.
-    Use with ``setup_pixel_scrolling`` on the menu's theme.
+    It also gives the vertical scrollbar an arrow at each end, with the
+    slider moving between them. Use with ``setup_pixel_scrolling`` on the
+    menu's theme.
     """
     if scale <= 1:
         return
@@ -319,25 +357,56 @@ def snap_scrolling(menu: Menu, scale: int) -> None:
 
     area.get_offsets = snapped_offsets  # type: ignore[method-assign]
 
+    # pygame_menu makes new scrollbars whenever the menu is resized.
+    create_rect = area.create_rect
+
+    def create_rect_and_patch(width: int, height: int) -> None:
+        create_rect(width, height)
+        for scrollbar in area._scrollbars:
+            _patch_scrollbar(scrollbar, scale)
+
+    area.create_rect = create_rect_and_patch  # type: ignore[method-assign]
     for scrollbar in area._scrollbars:
-        update_slider_rect = scrollbar._update_slider_rect
+        _patch_scrollbar(scrollbar, scale)
 
-        def snapped_slider_rect(
-            scrollbar: Any = scrollbar,
-            update_slider_rect: Callable[[], None] = update_slider_rect,
-        ) -> None:
-            update_slider_rect()
-            rect = scrollbar._slider_rect
-            scrollbar._slider_rect = Rect(
-                snap(rect.x, scale),
-                snap(rect.y, scale),
-                max(scale, snap(rect.width, scale)),
-                max(scale, snap(rect.height, scale)),
-            )
 
-        scrollbar._update_slider_rect = (  # type: ignore[method-assign]
-            snapped_slider_rect
+def _patch_scrollbar(scrollbar: Any, scale: int) -> None:
+    """Snap a scrollbar's slider to the grid, and give it arrows."""
+    vertical = scrollbar.get_orientation() == ORIENTATION_VERTICAL
+    update_slider_rect = scrollbar._update_slider_rect
+    render = scrollbar._render
+
+    def snapped_slider_rect() -> None:
+        update_slider_rect()
+        x, y, width, height = scrollbar._slider_rect
+        if vertical:
+            # pygame_menu never resets the slider's x, and shrinks it by
+            # the padding each time; put it back in the middle.
+            x = scrollbar._slider_pad
+            # Squeeze the slider's travel in between the arrow cells.
+            length = scrollbar._page_ctrl_length
+            cell = _ARROW_CELL * scale
+            travel = max(1, length - 2 * cell)
+            y = cell + y * travel // length
+            height = height * travel // length
+        scrollbar._slider_rect = Rect(
+            snap(x, scale),
+            snap(y, scale),
+            max(scale, snap(width, scale)),
+            max(scale, snap(height, scale)),
         )
+
+    def render_with_arrows() -> bool | None:
+        result = render()
+        if scrollbar._surface is not None:
+            _draw_scroll_arrows(scrollbar._surface, scale)
+        return result
+
+    scrollbar._update_slider_rect = snapped_slider_rect
+    if vertical:
+        scrollbar._render = render_with_arrows
+    if scrollbar._slider_rect is not None:
+        scrollbar._update_slider_rect()
 
 
 def spread_on_pixel_grid(menu: Menu, menu_height: int, scale: int) -> None:

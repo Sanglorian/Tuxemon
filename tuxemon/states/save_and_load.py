@@ -39,8 +39,7 @@ SLOT_SIZE = (205, 31)
 SLOT_PITCH = 35
 # Where the first slot sits inside the popup (the cursor goes to its left).
 SLOT_OFFSET = (15, 10)
-# Minimal3x5 has no "/" glyph.
-PAGE_SEPARATOR = "|"
+PAGE_SEPARATOR = "/"
 
 
 class PaginatedMenuState(PopUpMenu[None]):

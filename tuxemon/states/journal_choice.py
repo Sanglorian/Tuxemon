@@ -14,6 +14,13 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.pixel_grid import (
+    ARBATA_CURSOR_OFFSET,
+    arbata_font,
+    keep_on_grid,
+    uses_arbata,
+)
+from tuxemon.menu.theme import TuxemonArrowSelection
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
 from tuxemon.tools import transform_resource_filename
 
@@ -131,6 +138,18 @@ class JournalChoice(PygameMenuState):
         btn_y_offset = scale_int(8)
         menu._column_max_width = [scale_int(115), scale_int(150)]
 
+        # The page list is in Arbata, like the pages it leads to (see
+        # JournalState), except in locales with their own font.
+        page_font: dict[str, Any] = {"font_size": self.font_type.biggest}
+        if self.pixel_perfect:
+            page_font = {
+                "font_size": self.font_type.arbata,
+                "font_name": arbata_font(self.client.config.locale),
+                # Pull entries 5 nominal px closer together than the theme
+                # spacing, as on the journal pages.
+                "margin": (0, -scale_int(5)),
+            }
+
         for page in range(pages):
             start = page * MAX_PAGE
             end = min(start + MAX_PAGE, total_monster)
@@ -153,13 +172,13 @@ class JournalChoice(PygameMenuState):
                         monsters=monsters,
                         page=page,
                     ),
-                    font_size=self.font_type.biggest,
+                    **page_font,
                 ).translate(btn_x_offset, btn_y_offset)
             else:
                 lab1: Any = menu.add.label(
                     label,
                     font_color=DIMGRAY_COLOR,
-                    font_size=self.font_type.biggest,
+                    **page_font,
                 )
                 lab1.translate(btn_x_offset, btn_y_offset)
 
@@ -192,7 +211,21 @@ class JournalChoice(PygameMenuState):
         theme.widget_font_shadow = False
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_LEFT
+        scale = client.context.scaling.scale_int(1)
+        self.pixel_perfect = uses_arbata(client.config.locale)
+        if self.pixel_perfect:
+            # Arbata capitals sit 6 nominal px into each entry (2 px padding
+            # plus 4 px above the capitals); lower the cursor 5 px to match.
+            theme.widget_selection_effect = TuxemonArrowSelection(
+                scale, y_offset_nominal=ARBATA_CURSOR_OFFSET
+            )
+            # Arbata is drawn at its pixel size, so it needs no anti-aliasing.
+            theme.widget_font_antialias = False  # type: ignore[assignment]
         self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, box)
+        if self.pixel_perfect:
+            # pygame_menu centres each column (and starts it 1 screen px
+            # down), which leaves the list off the nominal grid.
+            keep_on_grid(self.menu, scale, center=False)
         self.reset_theme()

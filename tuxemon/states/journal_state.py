@@ -13,6 +13,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.pixel_grid import add_pixel_underline, keep_on_grid
 from tuxemon.menu.theme import TuxemonArrowSelection
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import (
@@ -77,7 +78,7 @@ class JournalState(PygameMenuState):
                         margin=entry_margin,
                     ).translate(btn_x_offset, btn_y_offset)
                 elif self.char.tuxepedia.is_caught(mon.slug):
-                    menu.add.button(
+                    caught: Any = menu.add.button(
                         label + "◉",
                         change_state(
                             "JournalInfoState",
@@ -89,17 +90,18 @@ class JournalState(PygameMenuState):
                         font_name=arbata_font,
                         button_id=mon.slug,
                         margin=entry_margin,
-                        underline=True,
-                        underline_color=SEA_BLUE_COLOR,
-                        # 1 nominal px below the capitals. pygame centres a
-                        # thick line on its y, so shift by half its width
-                        # to put the line's top edge on the pixel grid.
-                        underline_offset=scale_int(-2)
-                        + (scale_int(1) - 1) // 2,
-                        underline_width=self.client.context.scaling.scale_int(
-                            1
-                        ),
-                    ).translate(btn_x_offset, btn_y_offset)
+                    )
+                    # 1 nominal px below the capitals (which are rows 6-12
+                    # of the entry, padding included). pygame_menu's own
+                    # underline spills a screen px past the text.
+                    add_pixel_underline(
+                        caught,
+                        scale_int(1),
+                        row=14,
+                        color=SEA_BLUE_COLOR,
+                        shadow=False,
+                    )
+                    caught.translate(btn_x_offset, btn_y_offset)
             else:
                 label = f"{mon.txmn_id}. -----"
                 lab: Any = menu.add.label(
@@ -181,6 +183,11 @@ class JournalState(PygameMenuState):
         self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, monster_list)
+        # pygame_menu centres each column in whole screen px, which can
+        # leave the right-hand column 1 screen px off the nominal grid.
+        keep_on_grid(
+            self.menu, client.context.scaling.scale_int(1), center=False
+        )
         self.reset_theme()
 
         if select_last:

@@ -12,12 +12,18 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pygame.surface import Surface
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
+from pygame_menu.themes import Theme
 
 from tuxemon.database.runtime import db
 from tuxemon.entity.npc import NPC
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.pixel_grid import (
+    finish_pixel_menu,
+    setup_pixel_theme,
+    uses_arbata,
+)
 from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.const.sizes import PLAYER_NPC
 from tuxemon.save_system.save import get_index_of_latest_save
@@ -52,10 +58,37 @@ class BackgroundState(State):
         surface.fill(BLACK_COLOR)
 
 
+def setup_title_menu(state: PygameMenuState, theme: Theme) -> bool:
+    """Set a title screen menu's theme up for Arbata, where the locale allows.
+
+    Returns whether it did, i.e. whether the menu can be pixel perfect.
+    """
+    locale = state.client.config.locale
+    if not uses_arbata(locale):
+        return False
+    scale = state.client.context.scaling.scale_int(1)
+    setup_pixel_theme(theme, locale, state.font_type, scale)
+    return True
+
+
+def finish_title_menu(state: PygameMenuState, pixel_perfect: bool) -> None:
+    """Give a title screen menu's entries their shadow and grid."""
+    if pixel_perfect:
+        scale = state.client.context.scaling.scale_int(1)
+        finish_pixel_menu(state.menu, scale)
+
+
 class StartState(PygameMenuState):
     """The state responsible for the start menu."""
 
     name: ClassVar[str] = "StartState"
+
+    @property
+    def _font_size(self) -> int:
+        # Arbata has one (pixel) size, set by the theme.
+        return (
+            self.font_type.arbata if self.pixel_perfect else self.font_type.big
+        )
 
     def add_menu_items(
         self,
@@ -92,7 +125,7 @@ class StartState(PygameMenuState):
             menu.add.button(
                 title=T.translate("menu_load"),
                 action=change_state("LoadMenuState"),
-                font_size=self.font_type.big,
+                font_size=self._font_size,
                 button_id="menu_load",
             )
 
@@ -104,7 +137,7 @@ class StartState(PygameMenuState):
                         [0, True],
                         True,
                     ),
-                    font_size=self.font_type.big,
+                    font_size=self._font_size,
                     button_id="menu_autosave",
                 )
 
@@ -112,7 +145,7 @@ class StartState(PygameMenuState):
             menu.add.button(
                 title=T.translate("menu_new_game"),
                 action=new_game,
-                font_size=self.font_type.big,
+                font_size=self._font_size,
                 button_id="menu_new_game",
             )
         else:
@@ -121,7 +154,7 @@ class StartState(PygameMenuState):
                 action=change_state(
                     "ModsChoice", mods=self.client.config.mods
                 ),
-                font_size=self.font_type.big,
+                font_size=self._font_size,
                 button_id="menu_mod_choice",
             )
         menu.add.button(
@@ -129,7 +162,7 @@ class StartState(PygameMenuState):
             action=change_state(
                 "DifficultyPickState", on_pick=self.start_battle
             ),
-            font_size=self.font_type.big,
+            font_size=self._font_size,
             button_id="menu_battle",
         )
         menu.add.button(
@@ -139,19 +172,19 @@ class StartState(PygameMenuState):
                 on_pick=self.start_minigame,
                 difficulties=["easy", "normal", "hard"],
             ),
-            font_size=self.font_type.big,
+            font_size=self._font_size,
             button_id="menu_minigame",
         )
         menu.add.button(
             title=T.translate("menu_options"),
             action=change_state("ControlState", main_menu=True),
-            font_size=self.font_type.big,
+            font_size=self._font_size,
             button_id="menu_options",
         )
         menu.add.button(
             title=T.translate("exit"),
             action=exit_game,
-            font_size=self.font_type.big,
+            font_size=self._font_size,
             button_id="exit",
         )
 
@@ -163,6 +196,7 @@ class StartState(PygameMenuState):
         theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        self.pixel_perfect = setup_title_menu(self, theme)
         self._menu_config["theme"] = theme
 
         self.escape_key_exits = False
@@ -172,6 +206,7 @@ class StartState(PygameMenuState):
         )
 
         self.add_menu_items(self.menu)
+        finish_title_menu(self, self.pixel_perfect)
         self.reset_theme()
 
     def _on_afk_threshold(self, level: str) -> None:
@@ -206,6 +241,13 @@ class ModsChoice(PygameMenuState):
 
     name: ClassVar[str] = "ModsChoice"
 
+    @property
+    def _font_size(self) -> int:
+        # Arbata has one (pixel) size, set by the theme.
+        return (
+            self.font_type.arbata if self.pixel_perfect else self.font_type.big
+        )
+
     def add_menu_items(
         self,
         menu: Menu,
@@ -223,7 +265,7 @@ class ModsChoice(PygameMenuState):
             menu.add.button(
                 title=T.translate(f"{mod_name}_campaign"),
                 action=partial(new_game, mod_name),
-                font_size=self.font_type.big,
+                font_size=self._font_size,
                 button_id=mod_name,
             )
 
@@ -238,7 +280,9 @@ class ModsChoice(PygameMenuState):
         theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        self.pixel_perfect = setup_title_menu(self, theme)
         self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu)
+        finish_title_menu(self, self.pixel_perfect)
         self.reset_theme()

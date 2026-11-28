@@ -8,6 +8,11 @@ from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.pixel_grid import (
+    finish_pixel_menu,
+    setup_pixel_theme,
+    uses_arbata,
+)
 from tuxemon.menu.theme import get_theme
 from tuxemon.menu.transitions import PopInClamped
 from tuxemon.platform.platform_pygame.events import KeyBindingRules
@@ -27,19 +32,38 @@ class SetKeyState(PygameMenuState):
 
     def __init__(self, client: BaseClient, value: str, **kwargs: Any) -> None:
         self.value = value
+        scale = client.context.scaling.scale_int(1)
+        locale = client.config.locale
+        # Arbata is drawn at its pixel size, so the menu can sit on the
+        # nominal pixel grid; other locales' fonts can't.
+        pixel_perfect = uses_arbata(locale)
 
-        super().__init__(client=client, transition=PopInClamped(), **kwargs)
+        super().__init__(
+            client=client,
+            transition=PopInClamped(grid=scale if pixel_perfect else None),
+            **kwargs,
+        )
 
         # Copy: changing the shared theme would affect every later menu.
         theme = get_theme(self.client.context.scaling).copy()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        if pixel_perfect:
+            setup_pixel_theme(theme, locale, self.font_type, scale)
         self._menu_config["theme"] = theme
 
         self.menu.add.label(
             T.translate("options_new_input_key0").upper(),
-            font_size=self.font_type.small,
+            # Arbata has one (pixel) size, set by the theme.
+            font_size=(
+                self.font_type.arbata
+                if pixel_perfect
+                else self.font_type.small
+            ),
         )
+        if pixel_perfect:
+            # No cursor here, so the label's padding is margin enough.
+            finish_pixel_menu(self.menu, scale)
         self.reset_theme()
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:

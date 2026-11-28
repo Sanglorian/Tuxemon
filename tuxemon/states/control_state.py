@@ -9,9 +9,16 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
+from pygame_menu.widgets import Selector
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.pixel_grid import (
+    ARBATA_POPUP_MARGIN,
+    finish_pixel_menu,
+    setup_pixel_theme,
+    uses_arbata,
+)
 from tuxemon.menu.theme import get_theme
 from tuxemon.menu.transitions import PopInClamped
 from tuxemon.platform.const import buttons
@@ -35,18 +42,53 @@ class ControlState(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.main_menu = main_menu
+        scale = client.context.scaling.scale_int(1)
+        locale = client.config.locale
+        # Arbata is drawn at its pixel size, so the menu can sit on the
+        # nominal pixel grid; other locales' fonts can't.
+        self.pixel_perfect = uses_arbata(locale)
 
-        super().__init__(client, *args, transition=PopInClamped(), **kwargs)
+        super().__init__(
+            client,
+            *args,
+            transition=PopInClamped(
+                grid=scale if self.pixel_perfect else None,
+                margin=ARBATA_POPUP_MARGIN,
+            ),
+            **kwargs,
+        )
 
         # Copy: changing the shared theme would affect every later menu.
         theme = get_theme(self.client.context.scaling).copy()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        if self.pixel_perfect:
+            setup_pixel_theme(theme, locale, self.font_type, scale)
         self._menu_config["theme"] = theme
 
         self.initialize_items(self.menu)
+        if self.pixel_perfect:
+            for widget in self.menu.get_widgets():
+                if isinstance(widget, Selector):
+                    widget.set_sformat("{0} < {1} >")
+            finish_pixel_menu(self.menu, scale, ARBATA_POPUP_MARGIN)
         self.reload_controls()
         self.reset_theme()
+
+    @property
+    def _font_size(self) -> int:
+        # Arbata has one (pixel) size, set by the theme.
+        return (
+            self.font_type.arbata
+            if self.pixel_perfect
+            else self.font_type.small
+        )
+
+    @property
+    def _selector_style(self) -> str:
+        # The fancy style draws its box and arrows at fixed screen sizes;
+        # the classic one is all text, so it stays on the pixel grid.
+        return "classic" if self.pixel_perfect else "fancy"
 
     def initialize_items(self, menu: Menu) -> None:
         def change_state(
@@ -61,50 +103,50 @@ class ControlState(PygameMenuState):
         menu.add.button(
             title=T.translate("menu_up_key").upper(),
             action=change_state("SetKeyState", value="up"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
         menu.add.button(
             title=T.translate("menu_left_key").upper(),
             action=change_state("SetKeyState", value="left"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
         menu.add.button(
             title=T.translate("menu_right_key").upper(),
             action=change_state("SetKeyState", value="right"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
         menu.add.button(
             title=T.translate("menu_down_key").upper(),
             action=change_state("SetKeyState", value="down"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
         menu.add.button(
             title=T.translate("menu_primary_select_key").upper(),
             action=change_state("SetKeyState", value="a"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
         menu.add.button(
             title=T.translate("menu_secondary_select_key").upper(),
             action=change_state("SetKeyState", value="b"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
         menu.add.button(
             title=T.translate("menu_back_key").upper(),
             action=change_state("SetKeyState", value="back"),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
 
         menu.add.button(
             title=T.translate("menu_reset_default").upper(),
             action=self.client.config.reset_controls_to_default,
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
 
         language = T.translate("menu_language").upper()
         menu.add.button(
             title=f"{language}: {self.client.config.locale.slug}",
             action=change_state("SetLanguage", main_menu=self.main_menu),
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
 
         _native_w, _native_h = 256, 144
@@ -130,9 +172,9 @@ class ControlState(PygameMenuState):
             items=screen_sizes,
             selector_id="screen_size",
             default=_size_default,
-            style="fancy",
+            style=self._selector_style,
             onchange=on_change_screen_size,
-            font_size=self.font_type.small,
+            font_size=self._font_size,
         )
 
         if not self.main_menu:
@@ -156,7 +198,7 @@ class ControlState(PygameMenuState):
             menu.add.button(
                 title=title.upper(),
                 action=toggle_mute,
-                font_size=self.font_type.small,
+                font_size=self._font_size,
             )
 
             _music = self.client.config.music_volume
@@ -170,24 +212,47 @@ class ControlState(PygameMenuState):
             hemi = self.client.config.hemisphere
             _hemi = 0 if str(hemi) == "northern" else 1
 
-            music = menu.add.range_slider(
-                title=T.translate("menu_music_volume").upper(),
-                default=default_music,
-                range_values=(0, 100),
-                increment=10,
-                rangeslider_id="menu_music_volume",
-                value_format=lambda x: str(int(x)),
-                font_size=self.font_type.small,
-            )
-            sound = menu.add.range_slider(
-                title=T.translate("menu_sound_volume").upper(),
-                default=default_sound,
-                range_values=(0, 100),
-                increment=10,
-                rangeslider_id="menu_sound_volume",
-                value_format=lambda x: str(int(x)),
-                font_size=self.font_type.small,
-            )
+            if self.pixel_perfect:
+                # Range sliders draw their track, handle and ticks at fixed
+                # screen sizes; a selector of the same values is all text.
+                volumes: list[tuple[Any, ...]] = [
+                    (str(v), v) for v in range(0, 101, 10)
+                ]
+                music: Any = menu.add.selector(
+                    title=T.translate("menu_music_volume").upper(),
+                    items=volumes,
+                    selector_id="menu_music_volume",
+                    default=round(default_music / 10),
+                    style=self._selector_style,
+                    font_size=self._font_size,
+                )
+                sound: Any = menu.add.selector(
+                    title=T.translate("menu_sound_volume").upper(),
+                    items=volumes,
+                    selector_id="menu_sound_volume",
+                    default=round(default_sound / 10),
+                    style=self._selector_style,
+                    font_size=self._font_size,
+                )
+            else:
+                music = menu.add.range_slider(
+                    title=T.translate("menu_music_volume").upper(),
+                    default=default_music,
+                    range_values=(0, 100),
+                    increment=10,
+                    rangeslider_id="menu_music_volume",
+                    value_format=lambda x: str(int(x)),
+                    font_size=self._font_size,
+                )
+                sound = menu.add.range_slider(
+                    title=T.translate("menu_sound_volume").upper(),
+                    default=default_sound,
+                    range_values=(0, 100),
+                    increment=10,
+                    rangeslider_id="menu_sound_volume",
+                    value_format=lambda x: str(int(x)),
+                    font_size=self._font_size,
+                )
 
             def on_change_music(val: int) -> None:
                 """
@@ -210,8 +275,13 @@ class ControlState(PygameMenuState):
                 sound = self.menu.get_sound()
                 sound.set_sound_volume(SOUND_TYPE_WIDGET_SELECTION, volume)
 
-            music.set_onchange(on_change_music)
-            sound.set_onchange(on_change_sound)
+            if self.pixel_perfect:
+                # A selector passes its (label, value) item and the value.
+                music.set_onchange(lambda _item, val: on_change_music(val))
+                sound.set_onchange(lambda _item, val: on_change_sound(val))
+            else:
+                music.set_onchange(on_change_music)
+                sound.set_onchange(on_change_sound)
 
             def on_change_units(value: Any, label: str) -> None:
                 """
@@ -230,9 +300,9 @@ class ControlState(PygameMenuState):
                 items=units,
                 selector_id="unit",
                 default=_unit,
-                style="fancy",
+                style=self._selector_style,
                 onchange=on_change_units,
-                font_size=self.font_type.small,
+                font_size=self._font_size,
             )
 
             def on_change_hemisphere(value: Any, label: str) -> None:
@@ -252,9 +322,9 @@ class ControlState(PygameMenuState):
                 items=hemispheres,
                 selector_id="hemisphere",
                 default=_hemi,
-                style="fancy",
+                style=self._selector_style,
                 onchange=on_change_hemisphere,
-                font_size=self.font_type.small,
+                font_size=self._font_size,
             )
 
     def reload_controls(self) -> None:

@@ -10,6 +10,12 @@ from pygame_menu.menu import Menu
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.pixel_grid import (
+    ARBATA_POPUP_MARGIN,
+    finish_pixel_menu,
+    setup_pixel_theme,
+    uses_arbata,
+)
 from tuxemon.menu.theme import get_theme
 from tuxemon.menu.transitions import PopInClamped
 from tuxemon.session import local_session
@@ -30,10 +36,19 @@ class SetLanguage(PygameMenuState):
         self, client: BaseClient, main_menu: bool, **kwargs: Any
     ) -> None:
         self.main_menu = main_menu
+        scale = client.context.scaling.scale_int(1)
+        locale = client.config.locale
+        # Arbata is drawn at its pixel size, so the menu can sit on the
+        # nominal pixel grid; other locales' fonts can't. (The language
+        # names are in this locale's language, so its font covers them.)
+        self.pixel_perfect = uses_arbata(locale)
 
         super().__init__(
             client=client,
-            transition=PopInClamped(),
+            transition=PopInClamped(
+                grid=scale if self.pixel_perfect else None,
+                margin=ARBATA_POPUP_MARGIN,
+            ),
             **kwargs,
         )
 
@@ -41,9 +56,13 @@ class SetLanguage(PygameMenuState):
         theme = get_theme(self.client.context.scaling).copy()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        if self.pixel_perfect:
+            setup_pixel_theme(theme, locale, self.font_type, scale)
         self._menu_config["theme"] = theme
 
         self.initialize_items(self.menu)
+        if self.pixel_perfect:
+            finish_pixel_menu(self.menu, scale, ARBATA_POPUP_MARGIN)
         self.reset_theme()
 
     def change_language(self, locale: str) -> None:
@@ -69,5 +88,10 @@ class SetLanguage(PygameMenuState):
                 menu.add.button(
                     title=T.translate(f"language_{language.lower()}"),
                     action=partial(self.change_language, language),
-                    font_size=self.font_type.small,
+                    # Arbata has one (pixel) size, set by the theme.
+                    font_size=(
+                        self.font_type.arbata
+                        if self.pixel_perfect
+                        else self.font_type.small
+                    ),
                 )
